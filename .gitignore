@@ -1,0 +1,4 @@
+# For Latex Files
+*.aux
+*.log
+*.out

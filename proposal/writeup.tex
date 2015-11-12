@@ -1,0 +1,67 @@
+\documentclass[11pt, twoside]{article}
+
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{enumerate}
+\usepackage{titleps}
+\usepackage[top=1.25in,bottom=1in,right=1in,left=1in]{geometry}
+\usepackage[parfill]{parskip}
+\usepackage{titling}
+\usepackage{hyperref}
+
+
+\newpagestyle{ruled}
+{\setfoot{}{\thepage}{} \footrule}
+\pagestyle{ruled}
+
+
+\setlength{\droptitle}{-2em}   % This is your set screw
+\posttitle{\par\end{center}\vskip 0.5em}
+
+
+\title{6.867 Project Proposal}
+\date{}
+\author {Vickie Ye and Alexandr Wang}
+
+
+\begin{document}
+\maketitle
+
+For our final project, we are interested in exploring classification
+techniques to classify facial emotions. Specifically, we would like
+to explore two methods that have been used in facial recognition.
+The first is to use principal component analysis to represent facial
+images in the basis of the first principal components. The resulting
+representation could then be classified using a multiclass classifier.
+The second method is to explore convolutional neural networks to classify
+facial emotions with little or no preprocessing. We plan to use existing
+libraries for this aspect of the project, and refer to the methods and
+results of Lawrence et al \cite{Lawrence} and Matsugu et al \cite{Matsugu}.
+
+This project can be clearly divided into using PCA for feature
+extraction from images for classification and using convolutional
+neural networks for classification with little image preprocessing.
+The project could then follow the rough timeline:
+\begin{enumerate}
+\item Implement a baseline classifier using existing PCA and neural network
+package (week 1).
+\item Refine and add features to the baseline classifier. Explore other
+classification methods (multiclass SVM, multilinear perceptron) if
+time permints (week 2).
+\item Implement a convolutional neural network classifier using existing
+libraries (week 3).
+\item Refine and compare the CNN to the other methods explored (week 4).
+\end{enumerate}
+
+\begin{thebibliography}{9}
+\bibitem{Lawrence}
+Lawrence, S.; Giles, L.; Tsoi, A. C.; Back, A. D. (1997)
+``Face Recognition: A Convolutional Neural-Network Approach"
+\textit{Neural Networks, IEEE transactions on} 8 (1):98-113
+\bibitem{Matsugu}
+Matsugu, M.; Mori, K.; Mitari Y.; Kaneda Y. (2003)
+``Subject independent facial expression recognition with robust face detection using a convolutional neural network"
+\textit{Neural Networks} 16 (5):555-559
+\end{thebibliography}
+
+\end{document}
