@@ -15,7 +15,7 @@
 \pagestyle{ruled}
 
 
-\setlength{\droptitle}{-2em}   % This is your set screw
+\setlength{\droptitle}{-4em}   % This is your set screw
 \posttitle{\par\end{center}\vskip 0.5em}
 
 
@@ -49,22 +49,30 @@ extraction from images for classification and using convolutional
 neural networks for classification with little image preprocessing.
 The project could then follow the rough timeline:
 \begin{enumerate}
-\item Implement a baseline classifier using PCA and a neural network
-classifier. Evaluate the performance in terms of correctness, training time,
-and amount of training data required.
-\item Refine and add features to the baseline classifier. Implement a
-multiclass SVM classifier with PCA features and evaluate.
-\item Implement a convolutional neural network classifier using existing
-libraries.
-\item Refine and compare the CNN to the other methods explored.
+\item We first implement a baseline classifier using PCA and a neural network
+classifier. We will evaluate the performance in terms of correctness, training
+time, and amount of training data required.
+\item We will then implement a multiclass SVM classifier with PCA features.
+We will evaluate this method and compare it to the first method.
+\item Finally, we will implement a convolutional neural network classifier
+(using existing libraries). We expect this to be the most conceptually
+difficult, because we will need to optimize the network structure to
+prevent overfitting and have reasonable training times, among other
+concerns.
+\item We will finally evaluate the performance of the CNN along the
+aforementioned metrics and compare to the other methods explored.
 \end{enumerate}
 
 Our goals in this project are to learn more about PCA and CNNs and their
 application to image processing and classification. However we recognize
 that there are some risks associated with this proposal, because we do
-not have background in either. However, because this project is a
-comparison study of several approaches, we hope to have sufficient
-analysis on this relatively standard classification problem.
+not have background in either. Our concerns with CNNs especially is the
+amount of training data and training time they require for high performance.
+Although we do not think it will be likely, in the event that training the
+CNN to high performance becomes intractable, we can perform partial analysis
+and comparison to the other listed methods. Because this project is a
+comparison study of several approaches, we can be slightly more flexible
+in the case of insurmountable difficulties in any one method.
 
 \begin{thebibliography}{9}
 \bibitem{Lawrence}
