@@ -189,6 +189,7 @@ def inputs(train=True):
   float_image = tf.image.per_image_whitening(resized_image)
   # Ensure that the random shuffling has good mixing properties.
   min_fraction_of_examples_in_queue = 0.4
+  num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN if train else NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
   min_queue_examples = int(num_examples_per_epoch *
                            min_fraction_of_examples_in_queue)
   # Generate a batch of images and labels by building up a queue of examples.
@@ -210,7 +211,7 @@ def inference(images):
   #
   # conv1
   with tf.variable_scope('conv1') as scope:
-    kernel = _variable_with_weight_decay('weights', shape=[5, 5, 1, 64],
+    kernel = _variable_with_weight_decay('weights', shape=[5, 5, 3, 64],
                                          stddev=1e-4, wd=0.0)
     conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
     biases = _variable_on_cpu('biases', [64], tf.constant_initializer(0.0))
@@ -265,6 +266,7 @@ def inference(images):
                               tf.constant_initializer(0.0))
     softmax_linear = tf.nn.xw_plus_b(local4, weights, biases, name=scope.name)
     _activation_summary(softmax_linear)
+  print(softmax_linear)
   return softmax_linear
 
 

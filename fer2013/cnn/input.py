@@ -72,7 +72,7 @@ def read_example(train=True):
    global test_counter
    global train_examples
    global test_examples
-   if train_examples is None:
+   if train_examples is None and train:
        train_examples = read_examples('train.csv')
    if test_examples is None:
        test_examples = read_examples('test1.csv')
