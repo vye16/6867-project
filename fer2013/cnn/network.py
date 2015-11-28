@@ -146,16 +146,15 @@ def distorted_inputs():
   distorted_image = tf.image.random_crop(reshaped_image, [height, width])
 
   # Randomly flip the image horizontally.
-  #distorted_image = tf.image.random_flip_left_right(distorted_image)
+  distorted_image = tf.image.random_flip_left_right(distorted_image)
   # Because these operations are not commutative, consider randomizing
   # randomize the order their operation.
-  #distorted_image = tf.image.random_brightness(distorted_image,
-  #                                             max_delta=63)
-  #distorted_image = tf.image.random_contrast(distorted_image,
-  #                                           lower=0.2, upper=1.8)
+  distorted_image = tf.image.random_brightness(distorted_image,
+                                               max_delta=63)
+  distorted_image = tf.image.random_contrast(distorted_image,
+                                             lower=0.2, upper=1.8)
   # Subtract off the mean and divide by the variance of the pixels.
-  #float_image = tf.image.per_image_whitening(distorted_image)
-  float_image = distorted_image
+  float_image = tf.image.per_image_whitening(distorted_image)
   # Ensure that the random shuffling has good mixing properties.
   min_fraction_of_examples_in_queue = 0.4
   min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN *
