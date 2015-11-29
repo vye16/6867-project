@@ -84,7 +84,7 @@ def evaluate():
   with tf.Graph().as_default():
     # Get images and labels for CIFAR-10.
     eval_data = FLAGS.eval_data == 'test'
-    images, labels = network.batched_inputs(train=False)
+    images, labels = network.inputs(train=False)
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = network.inference(images)

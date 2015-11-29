@@ -30,6 +30,7 @@ FLAGS = tf.app.flags.FLAGS
 # Basic model parameters.
 tf.app.flags.DEFINE_integer('batch_size', 128,
                             """Number of images to process in a batch.""")
+tf.app.flags.DEFINE_string('data_dir', os.path.dirname(os.getcwd()), 'path to data direc')
 # Process images of this size. Note that this differs from the original CIFAR
 # image size of 32 x 32. If one alters this number, then the entire model
 # architecture will change and any model would need to be retrained.
@@ -135,7 +136,11 @@ def distorted_inputs():
     images: Images. 3D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE] size.
     labels: Labels. 1D tensor of [batch_size] size.
   """
-  read_input = input.read_example(train=True)
+
+  filenames = [os.path.join(FLAGS.data_dir, 'train.csv') for _ in xrange(100000)]
+  filename_queue = tf.train.string_input_producer(filenames)
+
+  read_input = input.read(filename_queue)
   reshaped_image = tf.cast(read_input.image, tf.float32)
   height = IMAGE_SIZE
   width = IMAGE_SIZE
@@ -176,7 +181,14 @@ def inputs(train=True):
     images: Images. 3D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE] size.
     labels: Labels. 1D tensor of [batch_size] size.
   """
-  read_input = input.read_example(train=train)
+  if train:
+    filenames = [os.path.join(FLAGS.data_dir, 'train.csv') for _ in xrange(1000)]
+  else:
+    filenames = [os.path.join(FLAGS.data_dir, 'test1.csv'),
+                 os.path.join(FLAGS.data_dir, 'test2.csv')]
+  filename_queue = tf.train.string_input_producer(filenames)
+
+  read_input = input.read(filename_queue)
   reshaped_image = tf.cast(read_input.image, tf.float32)
   height = IMAGE_SIZE
   width = IMAGE_SIZE

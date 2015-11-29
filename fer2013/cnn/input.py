@@ -21,6 +21,31 @@ def reformat(data):
     y[np.arange(N),classes] = 1
     return x, y, classes
 
+def read(filename_queue):
+  class Record(object):
+    pass
+  result = Record()
+
+  reader = tf.TextLineReader()
+  result.key, line = reader.read(filename_queue)
+
+  #sess = tf.Session()
+  #print(line[0].eval(session=sess), line[1].eval(session=sess))
+  #sess.close()
+
+  #print(line.get_shape())
+  record_defaults = [[1] for _ in xrange(2305)]
+  columns = tf.decode_csv(line, record_defaults=record_defaults)
+  #print("PRINT: " , len(columns))
+  x = tf.pack(columns[1:])
+  cls = columns[0]
+  result.height = 48
+  result.width = 48
+  result.label = tf.cast(cls, tf.int32)
+  depth_major = tf.reshape(x, [result.height, result.width, 1])
+  result.image = depth_major
+  return result
+
 def read_examples(filename):
   """Reads and parses examples from data files.
   Recommendation: if you want N-way read parallelism, call this function
