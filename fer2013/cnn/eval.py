@@ -24,7 +24,7 @@ tf.app.flags.DEFINE_integer('num_examples', 3000,
 tf.app.flags.DEFINE_boolean('run_once', True,
                          """Whether to run eval only once.""")
 
-def eval_once(saver, summary_writer, top_k_op, summary_op):
+def eval_once(saver, summary_writer, top_k_op, summary_op, logits, labels):
   """Run Eval once.
   Args:
     saver: Saver.
@@ -41,6 +41,7 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
       #   /my-favorite-path/cifar10_train/model.ckpt-0,
       # extract global_step from it.
       global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+      print(ckpt.model_checkpoint_path)
     else:
       print('No checkpoint file found')
       return
@@ -57,10 +58,14 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
       step = 0
       while step < num_iter and not coord.should_stop():
         predictions = sess.run([top_k_op])
+	log = sess.run([logits])
+	lab = sess.run([labels])
         true_count += np.sum(predictions)
         step += 1
         print('true_count: %s' % true_count)
         print('predictions: %s' % predictions)
+	print('logits: %s' % log)
+	print('labels: %s' % lab)
         print('step: %s' % step)
       # Compute precision @ 1.
       precision = true_count / total_sample_count
@@ -79,7 +84,7 @@ def evaluate():
   with tf.Graph().as_default():
     # Get images and labels for CIFAR-10.
     eval_data = FLAGS.eval_data == 'test'
-    images, labels = network.inputs(train=False)
+    images, labels = network.batched_inputs(train=False)
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = network.inference(images)
@@ -102,7 +107,7 @@ def evaluate():
     summary_writer = tf.train.SummaryWriter(FLAGS.eval_dir,
                                             graph_def=graph_def)
     while True:
-      eval_once(saver, summary_writer, top_k_op, summary_op)
+      eval_once(saver, summary_writer, top_k_op, summary_op, logits, labels)
       if FLAGS.run_once:
         break
       time.sleep(FLAGS.eval_interval_secs)
