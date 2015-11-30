@@ -38,7 +38,7 @@ def train():
   with tf.Graph().as_default():
     global_step = tf.Variable(0, trainable=False)
     # Get images and labels for CIFAR-10.
-    images, labels = network.distorted_inputs()
+    images, labels = network.inputs(train=True)
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = network.inference(images)

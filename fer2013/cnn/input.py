@@ -34,7 +34,7 @@ def read(filename_queue):
   #sess.close()
 
   #print(line.get_shape())
-  record_defaults = [[1] for _ in xrange(2305)]
+  record_defaults = [[0] for _ in xrange(2305)]
   columns = tf.decode_csv(line, record_defaults=record_defaults)
   #print("PRINT: " , len(columns))
   x = tf.pack(columns[1:])
@@ -43,7 +43,9 @@ def read(filename_queue):
   result.width = 48
   result.label = tf.cast(cls, tf.int32)
   depth_major = tf.reshape(x, [result.height, result.width, 1])
-  result.image = depth_major
+  three_chann = tf.concat(2, [depth_major, depth_major, depth_major])
+  print(three_chann.get_shape())
+  result.image = three_chann
   return result
 
 def read_examples(filename):

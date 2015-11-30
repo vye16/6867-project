@@ -19,7 +19,7 @@ tf.app.flags.DEFINE_string('checkpoint_dir', '/tmp/face_train',
                            """Directory where to read model checkpoints.""")
 tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 5,
                             """How often to run the eval.""")
-tf.app.flags.DEFINE_integer('num_examples', 3000,
+tf.app.flags.DEFINE_integer('num_examples', 2*3589,
                             """Number of examples to run.""")
 tf.app.flags.DEFINE_boolean('run_once', True,
                          """Whether to run eval only once.""")
@@ -58,14 +58,9 @@ def eval_once(saver, summary_writer, top_k_op, summary_op, logits, labels):
       step = 0
       while step < num_iter and not coord.should_stop():
         predictions = sess.run([top_k_op])
-	log = sess.run([logits])
-	lab = sess.run([labels])
         true_count += np.sum(predictions)
         step += 1
         print('true_count: %s' % true_count)
-        print('predictions: %s' % predictions)
-	print('logits: %s' % log)
-	print('labels: %s' % lab)
         print('step: %s' % step)
       # Compute precision @ 1.
       precision = true_count / total_sample_count

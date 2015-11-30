@@ -34,7 +34,7 @@ tf.app.flags.DEFINE_string('data_dir', os.path.dirname(os.getcwd()), 'path to da
 # Process images of this size. Note that this differs from the original CIFAR
 # image size of 32 x 32. If one alters this number, then the entire model
 # architecture will change and any model would need to be retrained.
-IMAGE_SIZE = 48
+IMAGE_SIZE = 24
 # Global constants describing the CIFAR-10 data set.
 NUM_CLASSES = 7
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 10000
@@ -137,7 +137,7 @@ def distorted_inputs():
     labels: Labels. 1D tensor of [batch_size] size.
   """
 
-  filenames = [os.path.join(FLAGS.data_dir, 'train.csv') for _ in xrange(100000)]
+  filenames = [os.path.join(FLAGS.data_dir, 'train.csv') for _ in xrange(10000)]
   filename_queue = tf.train.string_input_producer(filenames)
 
   read_input = input.read(filename_queue)
@@ -243,7 +243,7 @@ def inference(images):
   #
   # conv1
   with tf.variable_scope('conv1') as scope:
-    kernel = _variable_with_weight_decay('weights', shape=[5, 5, 1, 64],
+    kernel = _variable_with_weight_decay('weights', shape=[5, 5, 3, 64],
                                          stddev=1e-4, wd=0.0)
     conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
     biases = _variable_on_cpu('biases', [64], tf.constant_initializer(0.0))
