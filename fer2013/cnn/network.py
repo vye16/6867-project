@@ -14,17 +14,23 @@ Summary of available functions:
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
 import gzip
 import os
 import re
 import sys
 import tarfile
 import tensorflow.python.platform
+import random
+
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
+
 import tensorflow as tf
 import input
+
 from tensorflow.python.platform import gfile
+
 FLAGS = tf.app.flags.FLAGS
 
 # Basic model parameters.
@@ -34,7 +40,7 @@ tf.app.flags.DEFINE_string('data_dir', os.path.dirname(os.getcwd()), 'path to da
 # Process images of this size. Note that this differs from the original CIFAR
 # image size of 32 x 32. If one alters this number, then the entire model
 # architecture will change and any model would need to be retrained.
-IMAGE_SIZE = 24
+IMAGE_SIZE = 40
 # Global constants describing the CIFAR-10 data set.
 NUM_CLASSES = 7
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 10000
@@ -149,15 +155,23 @@ def distorted_inputs():
   # Randomly crop a [height, width] section of the image.
 
   distorted_image = tf.image.random_crop(reshaped_image, [height, width])
+  #distorted_image = tf.image.resize_image_with_crop_or_pad(reshaped_image,
+  #                                                       width, height)
 
   # Randomly flip the image horizontally.
   distorted_image = tf.image.random_flip_left_right(distorted_image)
   # Because these operations are not commutative, consider randomizing
   # randomize the order their operation.
-  distorted_image = tf.image.random_brightness(distorted_image,
-                                               max_delta=63)
+  #distorted_image = tf.image.random_brightness(distorted_image,
+  #                                             max_delta=10)
+
+  brightness_adj = random.randint(-20, 20)
+  distorted_image = tf.image.adjust_brightness(distorted_image,
+                                               brightness_adj,
+                                               min_value=1,
+                                               max_value=255)
   distorted_image = tf.image.random_contrast(distorted_image,
-                                             lower=0.2, upper=1.8)
+                                             lower=0.8, upper=1.2)
   # Subtract off the mean and divide by the variance of the pixels.
   float_image = tf.image.per_image_whitening(distorted_image)
   # Ensure that the random shuffling has good mixing properties.

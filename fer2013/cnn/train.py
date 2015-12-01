@@ -27,7 +27,7 @@ tf.app.flags.DEFINE_string('train_dir', '/tmp/face_train',
                            """Directory where to write event logs """
                            """and checkpoint.""")
 
-tf.app.flags.DEFINE_integer('max_steps', 10000,
+tf.app.flags.DEFINE_integer('max_steps', 100000,
                             """Number of batches to run.""")
 
 tf.app.flags.DEFINE_boolean('log_device_placement', False,
@@ -38,7 +38,7 @@ def train():
   with tf.Graph().as_default():
     global_step = tf.Variable(0, trainable=False)
     # Get images and labels for CIFAR-10.
-    images, labels = network.inputs(train=True)
+    images, labels = network.distorted_inputs()
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = network.inference(images)
