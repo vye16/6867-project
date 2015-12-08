@@ -14,26 +14,33 @@ Summary of available functions:
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
 import gzip
 import os
 import re
 import sys
 import tarfile
 import tensorflow.python.platform
+import random
+
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
+
 import tensorflow as tf
 import input
+
 from tensorflow.python.platform import gfile
+
 FLAGS = tf.app.flags.FLAGS
 
 # Basic model parameters.
 tf.app.flags.DEFINE_integer('batch_size', 128,
                             """Number of images to process in a batch.""")
+tf.app.flags.DEFINE_string('data_dir', os.path.dirname(os.getcwd()), 'path to data direc')
 # Process images of this size. Note that this differs from the original CIFAR
 # image size of 32 x 32. If one alters this number, then the entire model
 # architecture will change and any model would need to be retrained.
-IMAGE_SIZE = 48
+IMAGE_SIZE = 40
 # Global constants describing the CIFAR-10 data set.
 NUM_CLASSES = 7
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 10000
@@ -135,7 +142,11 @@ def distorted_inputs():
     images: Images. 3D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE] size.
     labels: Labels. 1D tensor of [batch_size] size.
   """
-  read_input = input.read_example(train=True)
+
+  filenames = [os.path.join(FLAGS.data_dir, 'train.csv') for _ in xrange(10000)]
+  filename_queue = tf.train.string_input_producer(filenames)
+
+  read_input = input.read(filename_queue)
   reshaped_image = tf.cast(read_input.image, tf.float32)
   height = IMAGE_SIZE
   width = IMAGE_SIZE
@@ -144,18 +155,25 @@ def distorted_inputs():
   # Randomly crop a [height, width] section of the image.
 
   distorted_image = tf.image.random_crop(reshaped_image, [height, width])
+  #distorted_image = tf.image.resize_image_with_crop_or_pad(reshaped_image,
+  #                                                       width, height)
 
   # Randomly flip the image horizontally.
-  #distorted_image = tf.image.random_flip_left_right(distorted_image)
+  distorted_image = tf.image.random_flip_left_right(distorted_image)
   # Because these operations are not commutative, consider randomizing
   # randomize the order their operation.
   #distorted_image = tf.image.random_brightness(distorted_image,
-  #                                             max_delta=63)
-  #distorted_image = tf.image.random_contrast(distorted_image,
-  #                                           lower=0.2, upper=1.8)
+  #                                             max_delta=10)
+
+  brightness_adj = random.randint(-20, 20)
+  distorted_image = tf.image.adjust_brightness(distorted_image,
+                                               brightness_adj,
+                                               min_value=1,
+                                               max_value=255)
+  distorted_image = tf.image.random_contrast(distorted_image,
+                                             lower=0.8, upper=1.2)
   # Subtract off the mean and divide by the variance of the pixels.
-  #float_image = tf.image.per_image_whitening(distorted_image)
-  float_image = distorted_image
+  float_image = tf.image.per_image_whitening(distorted_image)
   # Ensure that the random shuffling has good mixing properties.
   min_fraction_of_examples_in_queue = 0.4
   min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN *
@@ -177,7 +195,14 @@ def inputs(train=True):
     images: Images. 3D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE] size.
     labels: Labels. 1D tensor of [batch_size] size.
   """
-  read_input = input.read_example(train=train)
+  if train:
+    filenames = [os.path.join(FLAGS.data_dir, 'train.csv') for _ in xrange(1000)]
+  else:
+    filenames = [os.path.join(FLAGS.data_dir, 'test1.csv'),
+                 os.path.join(FLAGS.data_dir, 'test2.csv')]
+  filename_queue = tf.train.string_input_producer(filenames)
+
+  read_input = input.read(filename_queue)
   reshaped_image = tf.cast(read_input.image, tf.float32)
   height = IMAGE_SIZE
   width = IMAGE_SIZE
@@ -189,11 +214,33 @@ def inputs(train=True):
   float_image = tf.image.per_image_whitening(resized_image)
   # Ensure that the random shuffling has good mixing properties.
   min_fraction_of_examples_in_queue = 0.4
+  num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN if train else NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
   min_queue_examples = int(num_examples_per_epoch *
                            min_fraction_of_examples_in_queue)
   # Generate a batch of images and labels by building up a queue of examples.
   return _generate_image_and_label_batch(float_image, read_input.label,
                                          min_queue_examples)
+
+
+def batched_inputs(train=True):
+  """Construct a batch of input of either training or test data."""
+  images, labels = [], []
+  for _ in xrange(FLAGS.batch_size):
+    read_input = input.read_example(train=train)
+    reshaped_image = tf.cast(read_input.image, tf.float32)
+    height = IMAGE_SIZE
+    width = IMAGE_SIZE
+    # Image processing for evaluation.
+    # Crop the central [height, width] of the image.
+    resized_image = tf.image.resize_image_with_crop_or_pad(reshaped_image,
+                                                           width, height)
+    # Subtract off the mean and divide by the variance of the pixels.
+    float_image = tf.image.per_image_whitening(resized_image)
+
+    images.append(float_image)
+    labels.append(read_input.label)
+
+  return tf.pack(images), tf.pack(labels)
 
 
 def inference(images):
@@ -210,7 +257,7 @@ def inference(images):
   #
   # conv1
   with tf.variable_scope('conv1') as scope:
-    kernel = _variable_with_weight_decay('weights', shape=[5, 5, 1, 64],
+    kernel = _variable_with_weight_decay('weights', shape=[5, 5, 3, 64],
                                          stddev=1e-4, wd=0.0)
     conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
     biases = _variable_on_cpu('biases', [64], tf.constant_initializer(0.0))
@@ -265,6 +312,7 @@ def inference(images):
                               tf.constant_initializer(0.0))
     softmax_linear = tf.nn.xw_plus_b(local4, weights, biases, name=scope.name)
     _activation_summary(softmax_linear)
+  print(softmax_linear)
   return softmax_linear
 
 
