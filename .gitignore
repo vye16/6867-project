@@ -7,6 +7,7 @@
 
 # IPython Notebook
 **/.ipynb_checkpoints/
+*.pyc
 
 # dlib repo
 dlib/

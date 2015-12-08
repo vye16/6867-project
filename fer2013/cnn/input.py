@@ -21,6 +21,33 @@ def reformat(data):
     y[np.arange(N),classes] = 1
     return x, y, classes
 
+def read(filename_queue):
+  class Record(object):
+    pass
+  result = Record()
+
+  reader = tf.TextLineReader()
+  result.key, line = reader.read(filename_queue)
+
+  #sess = tf.Session()
+  #print(line[0].eval(session=sess), line[1].eval(session=sess))
+  #sess.close()
+
+  #print(line.get_shape())
+  record_defaults = [[0] for _ in xrange(2305)]
+  columns = tf.decode_csv(line, record_defaults=record_defaults)
+  #print("PRINT: " , len(columns))
+  x = tf.pack(columns[1:])
+  cls = columns[0]
+  result.height = 48
+  result.width = 48
+  result.label = tf.cast(cls, tf.int32)
+  depth_major = tf.reshape(x, [result.height, result.width, 1])
+  three_chann = tf.concat(2, [depth_major, depth_major, depth_major])
+  print(three_chann.get_shape())
+  result.image = three_chann
+  return result
+
 def read_examples(filename):
   """Reads and parses examples from data files.
   Recommendation: if you want N-way read parallelism, call this function
@@ -72,7 +99,7 @@ def read_example(train=True):
    global test_counter
    global train_examples
    global test_examples
-   if train_examples is None:
+   if train_examples is None and train:
        train_examples = read_examples('train.csv')
    if test_examples is None:
        test_examples = read_examples('test1.csv')
