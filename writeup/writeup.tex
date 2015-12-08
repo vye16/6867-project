@@ -1,0 +1,61 @@
+\documentclass[11pt, twocolumn, twoside]{article}
+
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{enumerate}
+\usepackage{titleps}
+\usepackage[top=1.25in,bottom=1in,right=1in,left=1in]{geometry}
+\usepackage[parfill]{parskip}
+\usepackage{titling}
+\usepackage{hyperref}
+
+\graphicspath{ {../images/} }
+
+\newpagestyle{ruled}
+{\setfoot{}{\thepage}{} \footrule}
+\pagestyle{ruled}
+
+
+\setlength{\droptitle}{-4em}   % This is your set screw
+\posttitle{\par\end{center}\vskip 0.5em}
+
+
+\title{6.867 Final Project Writeup} % Please change this
+\date{}
+\author {Vickie Ye and Alexandr Wang}
+
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+In this project, we compared different methods for facial expression recognition.
+\end{abstract}
+
+\section{Introduction}
+
+\subsection{PCA}
+
+\subsection{Facial Landmark Detection}
+
+\subsection{Convolutional Networks}
+
+\section{Experimental Details}
+The dataset we used was taken from a Kaggle facial expression dataset.
+
+\section{Results and Analysis}
+
+
+\begin{thebibliography}{9}
+\bibitem{Lawrence}
+Lawrence, S.; Giles, L.; Tsoi, A. C.; Back, A. D. (1997)
+``Face Recognition: A Convolutional Neural-Network Approach"
+\textit{Neural Networks, IEEE transactions on} 8 (1):98-113
+\bibitem{Matsugu}
+Matsugu, M.; Mori, K.; Mitari Y.; Kaneda Y. (2003)
+``Subject independent facial expression recognition with robust face detection using a convolutional neural network"
+\textit{Neural Networks} 16 (5):555-559
+\end{thebibliography}
+
+\end{document}
