@@ -100,7 +100,7 @@ As illustrated in Figure \ref{fig:inference}, after each convolution layer, we p
 \[ y(i, j) = \max_{di, dj} x(s_1i + di, s_2j + dj)\]
 with each term defined as before. Note that this is not a layer because there are no weights. The \texttt{norm1} operation is a local response normalization response, where each input is normalized by dividing it by the squared sum of inputs within a certain radius of it. This technique is described in more detail in \cite{Krizhevsky}, and serves as form of ``brightness normalization" on the input.
 
-The \texttt{local3} and \texttt{local4} are fully connected layers with rectified linear activation according to $f(x) = \max(x, 0)$. We employ regularization on both of these errors by adding the L2-loss of weights on both layers to our total loss function. 
+The \texttt{local3} and \texttt{local4} are fully connected layers with rectified linear activation according to $f(x) = \max(x, 0)$. We employ regularization on both of these errors by adding the L2-loss of weights on both layers to our total loss function. This is especially important because they are fully connected layers, which are very prone to overfitting.
 
 Finally, the \texttt{softmax\_linear} layer is linear transformation layer that produces logits according to a simple linear transformation based on learned weights and biases.
 
@@ -119,7 +119,7 @@ One technique which improved model accuracy by $3\%$ when implemented was using 
 
 \subsubsection{Minimizing Overfitting} \label{overfitting}
 
-Since the size of our training set was 28,709 labeled examples, and our neural net needed to go through many more than 28,000 examples to achieve convergence, we employed a few techniques to ensure that our convolutional neural net did not overfit to the training set.
+Since the size of our training set was 28,709 labeled examples, and our neural net needed to go through many more than 28,000 examples to achieve convergence, we employed a few techniques to ensure that our convolutional neural net did not overfit to the training set. This is also a risk because our top layers were fully connected, which means that our model could easily overfit using them.
 
 First off, we implemented learning rate decay on our convolutional neural net, so that the learning rate decreased as it had been trained through more examples. We used exponential decay, so that that the learning rate decayed by a factor of $0.1$ after training through $1,200,000$ examples, and we had it decay in a step change manner as is visible in Figure \ref{fig:cnnloss}. We found that the step change learning rate decay worked better than a continuous exponential decay. This could be because maintaining a high learning rate initially could ensure that the CNN was trained towards a good local optimum in fewer steps, whereas a steadily decreasing learning rate could limit the range of the neural network.
 
@@ -141,10 +141,6 @@ We can see how the total loss and the loss across the layers changed along with 
 
 In addition, the total loss, and in particular the cross entropy loss, dropped dramatically once the learning rate dropped according to the exponential learning rate decay schedule. This makes sense, since it allows the neural net to much more finely optimize the weights on the space it settled in with the larger learning rate. Finally, at the extremely small learning rate of $0.001$, the loss converged at around $0.5$, and any changes in the model at this point did not increase the classification success on the test set.
 
-We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}.
-
-
-
 \begin{figure*}
 	\centering
 	\includegraphics[width=2.4in]{learning_rate}
@@ -155,6 +151,12 @@ We can also see the change in the parameters of the model, weights and biases, a
 	\caption{The total loss, cross entropy, and learning rate of the convolutional neural net over time. The x-axis is the step, and the y-axis is the value.}
 	\label{fig:cnnloss}
 \end{figure*}
+
+We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}. We can see that the regularized layers \texttt{local3} and \texttt{local4} had weights that quickly converged and stayed with approximately the same distribution. The weights on the non-regularized layers, i.e. \texttt{conv1}, \texttt{conv2}, and \texttt{softmax\_linear}, mostly diverged as steps went on though, but with the smaller learning rate they stopped increasing and maintained approximately the same distribution. Finally, it is interesting that the biases for layers \texttt{conv1} and \texttt{local4} were learned to be extremely skewed distributions. This indicates that the performance of the network could potentially be improved by initializing those weights at a more skewed distribution, decreasing the initial learning time.
+
+One feature which could be implemented and would likely improve the performance of the algorithm is dropout, which could further prevent overfitting. This would randomly drop individual nodes with a certain probability $p$ at each step, and would only increase necessary training time by a factor $1/p$.
+
+
 
 \begin{figure*}
 	\centering
