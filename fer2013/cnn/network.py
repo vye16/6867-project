@@ -43,12 +43,12 @@ tf.app.flags.DEFINE_string('data_dir', os.path.dirname(os.getcwd()), 'path to da
 IMAGE_SIZE = 40
 # Global constants describing the CIFAR-10 data set.
 NUM_CLASSES = 7
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 10000
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 5000
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 3000
 
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
-NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
+NUM_EPOCHS_PER_DECAY = 250.0      # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
 
@@ -170,8 +170,14 @@ def distorted_inputs():
                                                brightness_adj,
                                                min_value=1,
                                                max_value=255)
-  distorted_image = tf.image.random_contrast(distorted_image,
-                                             lower=0.8, upper=1.2)
+
+  contrast_adj = random.uniform(0.85, 1.15)
+  distorted_image = tf.image.adjust_contrast(distorted_image,
+                                             contrast_adj,
+                                             min_value=1,
+                                             max_value=255)
+  #distorted_image = tf.image.random_contrast(distorted_image,
+  #                                           lower=0.7, upper=1.3)
   # Subtract off the mean and divide by the variance of the pixels.
   float_image = tf.image.per_image_whitening(distorted_image)
   # Ensure that the random shuffling has good mixing properties.

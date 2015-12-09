@@ -23,7 +23,7 @@ import tensorflow as tf
 import network
 
 FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_string('train_dir', '/tmp/face_train',
+tf.app.flags.DEFINE_string('train_dir', '/tmp/face_train2',
                            """Directory where to write event logs """
                            """and checkpoint.""")
 
