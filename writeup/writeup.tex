@@ -46,7 +46,8 @@ In this project, we compared classification using features manually extracted fr
 facial images against classification using a convolutional neural net, which learns
 the significant features of images through convolutional and pooling neural layers.
 The two manual feature extraction methods we explored were principal component
-analysis (PCA) and facial landmark detection.
+analysis (PCA) and facial landmark detection. These extracted features were then
+classified using a kernel support vector machine (SVM) and a neural network.
 
 \subsection{PCA}
 
@@ -59,6 +60,24 @@ the linearly independent basis of the first $k$ eigenvectors.
 
 \subsection{Facial Landmark Detection}
 
+Facial landmarks can be extracted from facial images into lower-dimensional feature
+vectors. The implementation that is used in this project uses the approach described
+in \cite{Kazemi}. Kazemi et. al. uses localized histograms of gradient orientation in
+a cascade of regressors that minimize squared error, in which each regressor is learned
+through gradient boosting. This approach is robust to geometric and photometric
+transformations, and showed less than 5\% error on the LFPW dataset.
+
+The facial landmarks (eyes, eyebrows, nose, mouth) are intuitively the most expressive 
+features in a face, and could also serve as good features for emotion classification.
+
+\subsection{Kernel SVM}
+
+Kernel SVM is 
+
+\subsection{Neural Network}
+
+An artificial neural network uses
+
 \subsection{Convolutional Neural Networks}
 
 Convolutional neural networks (CNNs) are artificial neural networks that work particularly well for image data. The structure of CNNs exploits strong local correlation in the inputs. This is done by enforcing local connectivity between neurons of adjacent layers. The inputs of a hidden unit at a particular layer $n$ are some locally-connected subset of the units of the previous layer $n-1$, done in such a way that the input to layer $n$ represent some tile of the units of layer $n-1$, where all the tiles overlap.
@@ -70,9 +89,33 @@ In addition, CNNs utilize shared parameterizations (weight vector and bias) acro
 \subsection{Datasets}
 
 For this project, we primarily used a dataset released by Kaggle as a part of an
-ICML-2013 workshop in representation learning.
+ICML-2013 workshop in representation learning. This dataset included 28,709 labeled
+training images, and two labeled test sets of 3,589 images. We also used images from
+........
 
-\subsection{PCA and Facial Landmarks}
+\subsection{PCA}
+We used \texttt{sklearn}'s implementation of PCA to extract eigenfaces from our data.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{eigenfaces}
+\caption{\label{fig:eigenfaces} The first 12 eigenfaces generated through PCA from the
+training data.}
+\end{figure}
+
+\subsection{Facial Landmarks}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{landmarks}
+\caption{\label{fig:landmarks} The first 12 test images with labeled facial landmarks
+as generated from DLib's shape recognizer.}
+\end{figure}
+
+\subsection{Kernel Support Vector Machine}
+
+\subsection{Neural Network}
 
 \subsection{Convolutional Neural Network}
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env oython
 
 from utils import *
-#from nnet import *
 from sklearn import cross_validation as crossval
 from sklearn.decomposition import PCA
 from sklearn.decomposition import RandomizedPCA
@@ -10,7 +9,6 @@ from sklearn.svm import SVC
 
 
 if __name__=="__main__":
-    do_nnet = False
 
     DATA_DIR = os.path.dirname(os.getcwd())
     data = np.loadtxt(os.path.join(DATA_DIR, "train.csv"), dtype=np.int, delimiter=",")
@@ -59,20 +57,3 @@ if __name__=="__main__":
     grid = make_grid(clf.grid_scores_, len(cvals), len(gamvals))
     print grid
     make_heatmap(grid, cvals, gamvals, "C", "gamma")
-    
-    
-    if do_nnet:
-        # Neural net
-        init, train_step, x, y, y_ = make_nn(100, X1new.shape[1], Y1.shape[1])
-        sess = tf.Session()
-        sess.run(init)
-        for i in range(5000):
-        #     idx = i % N
-        #     sess.run(train_step, feed_dict={x: Xnew[idx:idx+1], y_: Y[idx:idx+1]})
-            sess.run(train_step, feed_dict={x: Xnew[:len(Xnew)/2], y_: Ytv[:len(Ytv)/2]})
-            sess.run(train_step, feed_dict={x: Xnew[len(Xnew)/2:], y_: Ytv[len(Ytv)/2:]})
-            
-        correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        print sess.run(accuracy, feed_dict={x: X1new, y_: Y1})
-        print sess.run(accuracy, feed_dict={x: Xtnew, y_: Yt})
