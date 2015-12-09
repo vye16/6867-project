@@ -17,7 +17,7 @@ flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
 
 DIR = os.path.dirname(os.getcwd())
 TRFILE = os.path.join(DIR, "train.csv")
-TESTFILE = os.path.join(DIR, "test.csv")
+TESTFILE = os.path.join(DIR, "test1.csv")
 
 
 class Data(object):
@@ -29,11 +29,11 @@ class Data(object):
         self.cur = 0
 
     def next_batch(self):
-        old = self.cur
-        self.cur += self.batch_size % self.N
-        if (old >= self.cur):
-            return self.X, self.Y
-        return self.X[old:self.cur], self.Y[old:self.cur]
+        x = self.X[self.cur:self.cur + self.batch_size]
+        y = self.Y[self.cur:self.cur + self.batch_size]
+        self.cur += self.batch_size
+        self.cur %= self.N
+        return x, y
 
 def get_data():
     trdat = np.loadtxt(TRFILE, dtype=np.int, delimiter=',')
