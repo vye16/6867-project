@@ -4,7 +4,7 @@
 \usepackage{amsmath, amssymb}
 \usepackage{enumerate}
 \usepackage{titleps}
-\usepackage[top=1.25in,bottom=1in,right=0.75in,left=0.75in]{geometry}
+\usepackage[top=1.25in,bottom=1in,right=0.5in,left=0.5in]{geometry}
 \usepackage[parfill]{parskip}
 \usepackage{titling}
 \usepackage{hyperref}
@@ -20,7 +20,7 @@
 \posttitle{\par\end{center}\vskip 0.5em}
 
 
-\title{6.867 Final Project Writeup} % Please change this
+\title{6.867 Final Project: Detecting Facial Expressions using CNNs and Facial Landmarks} % Please change this
 \date{}
 \author {Vickie Ye and Alexandr Wang}
 
@@ -85,7 +85,7 @@ In particular, we use fully connected layers instead of locally connected layers
 
 \begin{figure}
 	\centering
-	\includegraphics[width=3.25in]{inference_graph}
+	\includegraphics[width=3.7in]{inference_graph}
 	\caption{TensorFlow computation graph for the neural network in the CNN we implemented, illustrating each of the layers and computation done in between each layer.}
 	\label{fig:inference}
 \end{figure}
@@ -110,7 +110,11 @@ The loss function we minimized was primarily the cross entropy between the multi
 \[H(p, q) = E_p[-\log q] = -\sum_x p(x)\log q(x)\]
 which measures the divergence between the two discrete probability distributions. In addition, we added standard weight decay, i.e. L2-loss, for the weights of the \texttt{local3} and \texttt{local4} layers for weight regularization.
 
-For training, we fed the model randomly distorted training examples (see subsection \ref{overfitting}) in randomly shuffled batches of 128 samples each. For each of these examples, we would determine our loss based on our current inference. After each batch, we performed back propagation using gradient descent to learn the weights, and we called each time we finished a batch a step.
+For training, we fed the model randomly distorted training examples (see subsection \ref{overfitting}) in randomly shuffled batches of 128 samples each. For each of these examples, we would determine our loss based on our current inference. After each batch, we performed back propagation using gradient descent to learn the weights, and we called each time we finished a batch a step. 
+
+Since distorting inputs on disk is computationally expensive and bottlenecks the process, we spawn 16 threads which each asynchronously generated distorted inputs and add them to a queue which the training process pulls from.
+
+One technique which improved model accuracy by $3\%$ when implemented was using moving averages of the learned variables. During training, we calculate the moving averages of all learned variables, and during model evaluation, we substitute all learned parameters with the moving averages instead.
 
 
 \subsubsection{Minimizing Overfitting} \label{overfitting}
@@ -129,22 +133,39 @@ For training in particular, we would do a few more distortions to artificially i
 
 \subsection{Convolutional Neural Network}
 
-\begin{figure}
-	\centering
-	\includegraphics[width=3in]{total_loss}
-	\includegraphics[width=3in]{cross_entropy}
-	\includegraphics[width=3in]{learning_rate}
-	\caption{The total loss, cross entropy, and learning rate of the convolutional neural net over time.}
-	\label{fig:cnnloss}
-\end{figure}
+We trained our model on Google Cloud Compute server with 4 CPUs and 15GB RAM for 20 hours using a training set of 28,709 labeled examples, and tested against a test set of 7,178 labeled examples. The model ran for 24,000 steps within those 20 hours, being fed a total of $3,072,000$ distorted training examples.
 
-\begin{figure}
+Our model achieved a correct classification rate of $65.2\%$ on the 7-way classification problem, which is comparable to the $69\%$ correct classification rate of the winning model on Kaggle. Our model correctly determines the correct label within the two highest logits with $82.3\%$ accuracy, and determines the correct label within the three highest logits with $90.5\%$ accuracy.
+
+We can see how the total loss and the loss across the layers changed along with the learning rate in Figure \ref{fig:cnnloss}. There are a couple interesting patterns. First, the weight decay loss on the \texttt{local3} and \texttt{local4} layers fell very quickly (by the 5000th step) and did not decrease past that, while still decreasing the cross entropy loss. The \texttt{local4} loss even steadily. 
+
+In addition, the total loss, and in particular the cross entropy loss, dropped dramatically once the learning rate dropped according to the exponential learning rate decay schedule. This makes sense, since it allows the neural net to much more finely optimize the weights on the space it settled in with the larger learning rate. Finally, at the extremely small learning rate of $0.001$, the loss converged at around $0.5$, and any changes in the model at this point did not increase the classification success on the test set.
+
+We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}.
+
+
+
+\begin{figure*}
 	\centering
-	\includegraphics[width=3in]{local3_loss}
-	\includegraphics[width=3in]{local4_loss}
-	\caption{The loss on the local3 layer and local4 layer over time in the convolutional neural net.}
-	\label{fig:layer_loss}
-\end{figure}
+	\includegraphics[width=2.4in]{learning_rate}
+	\includegraphics[width=2.4in]{total_loss}
+	\includegraphics[width=2.4in]{cross_entropy}
+	\includegraphics[width=2.4in]{local3_loss}
+	\includegraphics[width=2.4in]{local4_loss}
+	\caption{The total loss, cross entropy, and learning rate of the convolutional neural net over time. The x-axis is the step, and the y-axis is the value.}
+	\label{fig:cnnloss}
+\end{figure*}
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=2.4in]{conv1_params}
+	\includegraphics[width=2.4in]{conv2_params}
+	\includegraphics[width=2.4in]{local3_params}
+	\includegraphics[width=2.4in]{local4_params}
+	\includegraphics[width=2.4in]{softmax_params}
+	\caption{Histograms of the weights and biases of the layers of the CNN over time. The x-axis is the step, and the y-axis is the value.}
+	\label{fig:params}
+\end{figure*}
 
 \subsection{Comparison between the two}
 
