@@ -71,7 +71,7 @@ As illustrated in Figure \ref{fig:inference}, after each convolution layer, we p
 \[ y(i, j) = \max_{di, dj} x(s_1i + di, s_2j + dj)\]
 with each term defined as before. Note that this is not a layer because there are no weights. The \texttt{norm1} operation is a local response normalization response, where each input is normalized by dividing it by the squared sum of inputs within a certain radius of it. This technique is described in more detail in \cite{Krizhevsky}, and serves as form of ``brightness normalization" on the input.
 
-The \texttt{local3} and \texttt{local4} are fully connected layers with rectified linear activation according to $f(x) = max(x, 0)$. We employ regularization on both of these errors by adding the L2-loss of weights on both layers to our total loss function. 
+The \texttt{local3} and \texttt{local4} are fully connected layers with rectified linear activation according to $f(x) = \max(x, 0)$. We employ regularization on both of these errors by adding the L2-loss of weights on both layers to our total loss function. 
 
 Finally, the \texttt{softmax\_linear} layer is linear transformation layer that produces logits according to a simple linear transformation based on learned weights and biases.
 
@@ -96,6 +96,10 @@ For training in particular, we would do a few more distortions to artificially i
 
 \section{Results and Analysis}
 
+\subsection{Facial Landmarks}
+
+\subsection{Convolutional Neural Network}
+
 \begin{figure}
 	\centering
 	\includegraphics[width=3in]{total_loss}
@@ -112,6 +116,8 @@ For training in particular, we would do a few more distortions to artificially i
 	\caption{The loss on the local3 layer and local4 layer over time in the convolutional neural net.}
 	\label{fig:layer_loss}
 \end{figure}
+
+\subsection{Comparison between the two}
 
 
 \begin{thebibliography}{9}
