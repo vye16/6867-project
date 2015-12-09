@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 from utils import *
 from sklearn.decomposition import PCA
 
@@ -12,12 +13,14 @@ import tensorflow as tf
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('max_steps', 1000, 'Number of steps to run trainer.')
-flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
+flags.DEFINE_integer('max_steps', 2000, 'Number of steps to run trainer.')
+flags.DEFINE_float('learning_rate', 0.005, 'Initial learning rate.')
 
-DIR = os.path.dirname(os.getcwd())
-TRFILE = os.path.join(DIR, "trainnew.csv")
-TESTFILE = os.path.join(DIR, "test1new.csv")
+DIR = os.getcwd()
+#TRFILE = os.path.join(DIR, "trainnew.csv")
+#TESTFILE = os.path.join(DIR, "test1new.csv")
+TRFILE = os.path.join(DIR, "femalenew.csv")
+TESTFILE = os.path.join(DIR, "femalenew.csv")
 
 
 class Data(object):
@@ -36,13 +39,11 @@ class Data(object):
         return x, y
 
 def get_data():
-    trdat = np.loadtxt(TRFILE, dtype=np.int, delimiter=',')
-    testdat = np.loadtxt(TESTFILE, dtype=np.int, delimiter=',')
+    X, Y, _ = load_features(TRFILE)
+    Xt, Yt, _= load_features(TESTFILE)
     print("loaded data")
-    X, Y, _ = reformat(trdat)
-    Xt, Yt, _ = reformat(testdat)
 
-    return Xnew, Y, Xtnew, Yt
+    return Xt, Y, Xt, Yt
 
 
 def main(_):
@@ -66,13 +67,16 @@ def main(_):
   wd1 = tf.mul(tf.nn.l2_loss(W1), 0.004)
   b1 = tf.Variable(tf.random_uniform([M], -0.5, 0.5), name='b1')
   l1 = tf.nn.sigmoid(tf.matmul(x, W1) + b1)
-  W2 = tf.Variable(tf.random_uniform([M, k], -0.5, 0.5), name='w2')
+  W2 = tf.Variable(tf.random_uniform([M, M], -0.5, 0.5), name='w2')
   wd2 = tf.mul(tf.nn.l2_loss(W2), 0.004)
-  b2 = tf.Variable(tf.random_uniform([k], -0.5, 0.5), name='b2')
+  b2 = tf.Variable(tf.random_uniform([M], -0.5, 0.5), name='b2')
+  l2 = tf.nn.sigmoid(tf.matmul(l1, W2) + b2)
+  W3 = tf.Variable(tf.random_uniform([M, k], -0.5, 0.5), name='w3')
+  wd3 = tf.mul(tf.nn.l2_loss(W3), 0.004)
+  b3 = tf.Variable(tf.random_uniform([k], -0.5, 0.5), name='b3')
 
   # use a name scope to organize nodes in the graph visualizer
-  with tf.name_scope('Wx_b') as scope:
-    y = tf.nn.softmax(tf.matmul(l1, W2) + b2)
+  y = tf.nn.softmax(tf.matmul(l2, W3) + b3)
 
   # Add summary ops to collect data
   w1_hist = tf.histogram_summary('weights1', W1)
@@ -84,20 +88,16 @@ def main(_):
 
   # Define loss and optimizer
   y_ = tf.placeholder('float', [None, k], name='y-input')
-  # More name scopes will clean up the graph representation
-  with tf.name_scope('xent') as scope:
-    cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
-    ce_summ = tf.scalar_summary('cross entropy', cross_entropy)
+  cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
+  ce_summ = tf.scalar_summary('cross entropy', cross_entropy)
 
   total_loss = tf.add_n([wd1, wd2, cross_entropy], name='total_loss')
-  with tf.name_scope('train') as scope:
-    train_step = tf.train.GradientDescentOptimizer(
+  train_step = tf.train.GradientDescentOptimizer(
         FLAGS.learning_rate).minimize(total_loss)
 
-  with tf.name_scope('test') as scope:
-    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
-    accuracy_summary = tf.scalar_summary('accuracy', accuracy)
+  correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+  accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
+  accuracy_summary = tf.scalar_summary('accuracy', accuracy)
 
   # Merge all the summaries and write them out to /tmp/mnist_logs
   merged = tf.merge_all_summaries()
@@ -116,7 +116,6 @@ def main(_):
       print('Accuracy at step %s: %s' % (i, acc))
     else:
       batch_xs, batch_ys = trdat.next_batch()
-      print(batch_xs.shape, batch_ys.shape)
       feed = {x: batch_xs, y_: batch_ys}
       sess.run(train_step, feed_dict=feed)
 

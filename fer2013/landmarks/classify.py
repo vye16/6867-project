@@ -7,26 +7,6 @@ from sklearn.svm import SVC
 from sklearn.grid_search import GridSearchCV
 
 
-def load_features(fname):
-    data = np.loadtxt(fname, delimiter=",")
-    x = data[:,1:]
-    c = data[:,0].astype(np.uint8)
-    k = max(c) + 1
-    n = x.shape[0]
-    y = np.zeros((n, k))
-    y[np.arange(n), c] = 1
-    return x, y, c
-
-def make_grid(grid_scores, numc, numgam):
-    idx = 0
-    data = np.zeros((numc, numgam))
-    for i in range(numc):
-        for j in range(numgam):
-            data[i,j] = grid_scores[idx][1]
-            idx += 1
-    return data
-
-
 if __name__=="__main__":
     DATA_DIR = os.path.dirname(os.path.abspath(__file__))
     x, y, c = load_features(os.path.join(DATA_DIR, "test1new.csv"))

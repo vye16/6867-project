@@ -3,6 +3,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def load_features(fname):
+    data = np.loadtxt(fname, delimiter=",")
+    x = data[:,1:]
+    c = data[:,0].astype(np.uint8)
+    k = max(c) + 1
+    n = x.shape[0]
+    y = np.zeros((n, k))
+    y[np.arange(n), c] = 1
+    return x, y, c
+
+def make_grid(grid_scores, numc, numgam):
+    idx = 0
+    data = np.zeros((numc, numgam))
+    for i in range(numc):
+        for j in range(numgam):
+            data[i,j] = grid_scores[idx][1]
+            idx += 1
+    return data
+
+
 
 def make_heatmap(data, rlabels, clabels, rname, cname): # data should already be in matrix form
     fig, ax = plt.subplots()
