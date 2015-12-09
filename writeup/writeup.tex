@@ -4,7 +4,7 @@
 \usepackage{amsmath, amssymb}
 \usepackage{enumerate}
 \usepackage{titleps}
-\usepackage[top=1.25in,bottom=1in,right=1in,left=1in]{geometry}
+\usepackage[top=1.25in,bottom=1in,right=0.75in,left=0.75in]{geometry}
 \usepackage[parfill]{parskip}
 \usepackage{titling}
 \usepackage{hyperref}
@@ -52,7 +52,22 @@ The dataset we used was taken from a Kaggle facial expression dataset.
 
 For implementing our convolutional neural network, we used TensorFlow for the entire implementation, i.e. training, inference, and evaluation.
 
+\begin{figure}
+	\centering
+	\includegraphics[width=3.25in]{inference_graph}
+	\caption{TensorFlow computation graph for the neural network in the CNN we implemented, illustrating each of the layers.}
+	\label{fig:inference}
+\end{figure}
+
 \section{Results and Analysis}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=3in]{total_loss}
+	\includegraphics[width=3in]{learning_rate}
+	\caption{The total loss and learning rate of the convolutional neural net over time.}
+	\label{fig:cnnloss}
+\end{figure}
 
 
 \begin{thebibliography}{9}
