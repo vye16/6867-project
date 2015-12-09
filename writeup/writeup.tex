@@ -30,27 +30,53 @@
 
 
 \begin{abstract}
-In this project, we compared different methods for facial expression recognition.
+In this project, we compared different methods for facial expression recognition
+using images from a Kaggle dataset released as a part of an ICML-2013 workshop
+on representation learning.
+We found that classification using features extracted manually from facial images
+using principal component analysis yielded on average 40\% classification accuracy.
+Using features extracted by facial landmark detection, we received on average 52\%
+classification accuracy. However, when we used a convolutional neural network, we
+received 65\% classification accuracy.
 \end{abstract}
 
 \section{Introduction}
 
+In this project, we compared classification using features manually extracted from
+facial images against classification using a convolutional neural net, which learns
+the significant features of images through convolutional and pooling neural layers.
+The two manual feature extraction methods we explored were principal component
+analysis (PCA) and facial landmark detection.
+
 \subsection{PCA}
+
+In facial recognition, PCA is used in generating a low-dimensional representation of
+face images as linear combinations of the first $k$ eigenfaces of training data.
+Eigenfaces are the eigenvectors of the training data's covariance matrix; the first
+eigenfaces are the vectors along which the training data shows the highest variance.
+Thus, we can express a facial image vector, normally thousands of pixels, in terms of
+the linearly independent basis of the first $k$ eigenvectors. 
 
 \subsection{Facial Landmark Detection}
 
 \subsection{Convolutional Neural Networks}
 
-Convolutional Neural Networks (CNNs) are a particularly type of artificial neural network that works particularly well for image data. The structure of CNNs exploits strong local correlation in the inputs. This is done by enforcing local connectivity between neurons of adjacent layers. The inputs of a hidden unit at a particular layer $n$ are some locally-connected subset of the units of the previous layer $n-1$, done in such a way that the input to layer $n$ represent some tile of the units of layer $n-1$, where all the tiles overlap.
+Convolutional neural networks (CNNs) are artificial neural networks that work particularly well for image data. The structure of CNNs exploits strong local correlation in the inputs. This is done by enforcing local connectivity between neurons of adjacent layers. The inputs of a hidden unit at a particular layer $n$ are some locally-connected subset of the units of the previous layer $n-1$, done in such a way that the input to layer $n$ represent some tile of the units of layer $n-1$, where all the tiles overlap.
 
 In addition, CNNs utilize shared parameterizations (weight vector and bias) across layers. By constraining the same types of weights across layers, essentially replicating units across layers, allows for features to be detected regardless to their position in the initial input, making the network much more robust to real world image data. Additionally, by constraining multiple weights to be the same reduces the parameters to be learnt, increasing learning efficiency.
 
 \section{Experimental Details}
-The dataset we used was taken from a Kaggle facial expression dataset.
+
+\subsection{Datasets}
+
+For this project, we primarily used a dataset released by Kaggle as a part of an
+ICML-2013 workshop in representation learning.
+
+\subsection
 
 \subsection{Convolutional Neural Network}
 
-For implementing our convolutional neural network, we used TensorFlow for the entire implementation, i.e. training, inference, and evaluation.
+To implement our convolutional neural network, we used Google's TensorFlow neural network library.
 
 \begin{figure}
 	\centering

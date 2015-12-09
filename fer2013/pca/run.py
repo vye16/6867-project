@@ -3,6 +3,7 @@
 from utils import *
 #from nnet import *
 from sklearn import cross_validation as crossval
+from sklearn.decomposition import PCA
 from sklearn.decomposition import RandomizedPCA
 from sklearn.grid_search import GridSearchCV
 from sklearn.svm import SVC
@@ -46,14 +47,16 @@ if __name__=="__main__":
     X2, Y2, C2 = reformat(data2)
     Xt, Yt, Ct = reformat(datat)
 
-    pca = RandomizedPCA(n_components=150, whiten=True)
+    ncomp = 150
+#    pca = RandomizedPCA(n_components=ncomp, whiten=True)
+    pca = PCA(n_components=ncomp, whiten=True)
     pca.fit(X) # fit pca to training data
     Xnew = pca.transform(Xtv)
     X1new = pca.transform(X1)
     X2new = pca.transform(X2)
     Xtnew = pca.transform(Xt)
     
-    eigenfaces = pca.components_.reshape((150, 48, 48))
+    eigenfaces = pca.components_.reshape((ncomp, 48, 48))
     titles = ["eigenface %i" % i for i in range(len(eigenfaces))]
     plot_gallery(eigenfaces, titles, 48, 48)
     disp = Xtnew[:12]
@@ -74,7 +77,7 @@ if __name__=="__main__":
 
     grid = make_grid(clf.grid_scores_, len(cvals), len(gamvals))
     print grid
-    make_heatmap(grid, cvals, gamvals, "C", "$\gamma")
+    make_heatmap(grid, cvals, gamvals, "C", "gamma")
     
     
     if do_nnet:
