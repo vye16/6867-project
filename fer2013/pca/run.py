@@ -1,7 +1,7 @@
 #!/usr/bin/env oython
 
 from utils import *
-from nnet import *
+#from nnet import *
 from sklearn import cross_validation as crossval
 from sklearn.decomposition import RandomizedPCA
 from sklearn.grid_search import GridSearchCV
@@ -17,16 +17,14 @@ def reformat(data):
     y[np.arange(N),classes] = 1
     return x, y, classes
 
-def make_grid(grid_scores, cvals, gamvals):
-    cidx = {}
-    gidx = {}
-    for i, c in enumerate(cvals):
-        cidx[c] = i
-    for i, g in enumerate(gamvals):
-        gidx[g] = i
-
-    for score in gridscores:
-        pass
+def make_grid(grid_scores, numc, numgam):
+    idx = 0
+    data = np.zeros((numc, numgam))
+    for i in range(numc):
+        for j in range(numgam):
+            data[i,j] = grid_scores[idx][1]
+            idx += 1
+    return data
 
 
 if __name__=="__main__":
@@ -59,20 +57,24 @@ if __name__=="__main__":
     titles = ["eigenface %i" % i for i in range(len(eigenfaces))]
     plot_gallery(eigenfaces, titles, 48, 48)
     disp = Xtnew[:12]
-    titles = C1[:12]
-    projs = X1new.dot(pca.components_)
+    titles = Ct[:12]
+    projs = disp.dot(pca.components_)
     plot_gallery(projs.reshape((len(projs), 48, 48)), titles, 48, 48)
-    plot_gallery(Xt.reshape((len(Xt), 48, 48)), C1, 48, 48)
+    plot_gallery(Xt.reshape((len(Xt), 48, 48)), Ct, 48, 48)
     
     idx = np.arange(len(Xnew))
     valsplit = [(idx[:len(X1)], idx[len(X1):])]
-    cvals = [1e2, 5e2, 1e3, 5e3, 1e4, 5e4, 1e5, 5e5]
-    gamvals = [1e-4, 5e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1]
+    cvals = [1, 5, 1e1, 5e1, 1e2, 5e2, 1e3, 5e3]
+    gamvals = [5e-5, 1e-4, 5e-4, 1e-3, 5e-3, 1e-2]
     param_grid = {'C': cvals,'gamma': gamvals, }
     clf = GridSearchCV(SVC(kernel='rbf'), param_grid, cv=valsplit)
     clf = clf.fit(Xnew, Ctv)
     print clf.score(X2new, C2)
     print clf.score(Xtnew, Ct)
+
+    grid = make_grid(clf.grid_scores_, len(cvals), len(gamvals))
+    print grid
+    make_heatmap(grid, cvals, gamvals, "C", "$\gamma")
     
     
     if do_nnet:

@@ -61,16 +61,20 @@ def write_to_file(trans, fname):
 if __name__=="__main__":
     trained_pred = op.join(DLIB, "python_examples/shape_predictor_68_face_landmarks.dat")
 
-    traindat = np.loadtxt(op.join(FER, "train.csv"), dtype=np.uint8, delimiter=',')
-    test1dat = np.loadtxt(op.join(FER, "test1.csv"), dtype=np.uint8, delimiter=',')
-    test2dat = np.loadtxt(op.join(FER, "test2.csv"), dtype=np.uint8, delimiter=',')
-
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(trained_pred)
 
-    dats = [traindat, test1dat, test2dat]
-#    dats = [load_images(20, op.join(FER, "test1.csv"))]
+#    traindat = np.loadtxt(op.join(FER, "train.csv"), dtype=np.uint8, delimiter=',')
+#    test1dat = np.loadtxt(op.join(FER, "test1.csv"), dtype=np.uint8, delimiter=',')
+#    test2dat = np.loadtxt(op.join(FER, "test2.csv"), dtype=np.uint8, delimiter=',')
+#    dats = [traindat, test1dat, test2dat]
+
+    fdat = np.loadtxt(op.join(FER, "data_female.csv"), dtype=np.uint8, delimiter=',')
+    ndat = np.loadtxt(op.join(FER, "data_neutral.csv"), dtype=np.uint8, delimiter=',')
+    dats = [fdat, ndat]
+    outfs = ["femalenew.csv", "neutralnew.csv"]
     trans = []
+
     for data in dats:
         X, _, C = reformat(data)
         Xnew, good, imovers = get_landmarks(X, detector, predictor)
@@ -78,6 +82,5 @@ if __name__=="__main__":
         print "Xnew shape", Xnew.shape 
         trans.append(np.hstack((C, 10 * Xnew)))
     
-    write_to_file(trans[0], "trainnew.csv")
-    write_to_file(trans[1], "test1new.csv")
-    write_to_file(trans[2], "test2new.csv")
+    for outf, datnew in zip(outfs, trans):
+        write_to_file(datnew, outf)
