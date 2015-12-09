@@ -4,6 +4,23 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+def reformat(data):
+    x = data[:,1:]
+    classes = data[:,0].astype(np.int)
+    K = max(classes)+1
+    N = x.shape[0]
+    y = np.zeros((N,K))
+    y[np.arange(N),classes] = 1
+    return x, y, classes
+
+def make_grid(grid_scores, numc, numgam):
+    idx = 0
+    data = np.zeros((numc, numgam))
+    for i in range(numc):
+        for j in range(numgam):
+            data[i,j] = grid_scores[idx][1]
+            idx += 1
+    return data
 
 def plot_gallery(images, titles, h, w, n_row=3, n_col=4):
     # Helper function to plot a gallery of portraits
