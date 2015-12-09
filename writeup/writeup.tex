@@ -4,7 +4,7 @@
 \usepackage{amsmath, amssymb}
 \usepackage{enumerate}
 \usepackage{titleps}
-\usepackage[top=1.25in,bottom=1in,right=0.5in,left=0.5in]{geometry}
+\usepackage[top=1.25in,bottom=1in,right=0.8in,left=0.8in]{geometry}
 \usepackage[parfill]{parskip}
 \usepackage{titling}
 \usepackage{hyperref}
@@ -78,9 +78,9 @@ Kernel SVM is
 
 An artificial neural network uses
 
-\subsection{Convolutional Neural Networks}
+\subsection{Convolutional Neural Network}
 
-Convolutional neural networks (CNNs) are artificial neural networks that work particularly well for image data. The structure of CNNs exploits strong local correlation in the inputs. This is done by enforcing local connectivity between neurons of adjacent layers. The inputs of a hidden unit at a particular layer $n$ are some locally-connected subset of the units of the previous layer $n-1$, done in such a way that the input to layer $n$ represent some tile of the units of layer $n-1$, where all the tiles overlap.
+Convolutional neural networks (CNNs) are artificial neural networks that work particularly well for image data. The structure of CNNs exploits strong local correlation in the inputs. This is done by enforcing local connectivity between neurons of adjacent layers. The inputs of a hidden unit at a particular layer $n$ are some locally-connected subset of the units of the previous layer $n-1$, done in such a way that the input to layer $n$ represent some tile of the units of layer $n-1$, where the tiles are overlapping.
 
 In addition, CNNs utilize shared parameterizations (weight vector and bias) across layers. By constraining the same types of weights across layers, essentially replicating units across layers, allows for features to be detected regardless to their position in the initial input, making the network much more robust to real world image data. Additionally, by constraining multiple weights to be the same reduces the parameters to be learnt, increasing learning efficiency.
 
@@ -98,7 +98,7 @@ We used \texttt{sklearn}'s implementation of PCA to extract eigenfaces from our 
 
 \begin{figure}
 \centering
-\includegraphics[width=0.45\textwidth]{eigenfaces}
+\includegraphics[width=0.5\textwidth]{eigenfaces}
 \caption{\label{fig:eigenfaces} The first 12 eigenfaces generated through PCA from the
 training data.}
 \end{figure}
@@ -108,12 +108,12 @@ training data.}
 
 \begin{figure}
 \centering
-\includegraphics[width=0.45\textwidth]{landmarks}
+\includegraphics[width=0.5\textwidth]{landmarks}
 \caption{\label{fig:landmarks} The first 12 test images with labeled facial landmarks
 as generated from DLib's shape recognizer.}
 \end{figure}
 
-\subsection{Kernel Support Vector Machine}
+\subsection{Kernel SVM}
 
 \subsection{Neural Network}
 
@@ -143,13 +143,13 @@ As illustrated in Figure \ref{fig:inference}, after each convolution layer, we p
 \[ y(i, j) = \max_{di, dj} x(s_1i + di, s_2j + dj)\]
 with each term defined as before. Note that this is not a layer because there are no weights. The \texttt{norm1} operation is a local response normalization response, where each input is normalized by dividing it by the squared sum of inputs within a certain radius of it. This technique is described in more detail in \cite{Krizhevsky}, and serves as form of ``brightness normalization" on the input.
 
-The \texttt{local3} and \texttt{local4} are fully connected layers with rectified linear activation according to $f(x) = \max(x, 0)$. We employ regularization on both of these errors by adding the L2-loss of weights on both layers to our total loss function. 
+The \texttt{local3} and \texttt{local4} are fully connected layers with rectified linear activation according to $f(x) = \max(x, 0)$. We employ regularization on both of these layers by adding the L2-loss of weights on both layers to our total loss function. This is especially important because they are fully connected layers, which are very prone to overfitting.
 
-Finally, the \texttt{softmax\_linear} layer is linear transformation layer that produces logits according to a simple linear transformation based on learned weights and biases.
+Finally, the \texttt{softmax\_linear} layer is linear transformation layer that produces unnormalized logits according to a simple linear transformation based on learned weights and biases.
 
 \subsubsection{Training}
 
-The loss function we minimized was primarily the cross entropy between the multinomial distribution, formed by the normalized logits outputted by our CNN, and the probability distribution that is 1 for the correct class and 0 for all other classes. The expression for cross entropy between two probability distributions $p, q$ is
+The loss function we minimized was primarily the cross entropy between the multinoulli distribution, formed by the normalized logits outputted by our CNN, and the probability distribution that is 1 for the correct class and 0 for all other classes. The expression for cross entropy between two probability distributions $p, q$ is
 \[H(p, q) = E_p[-\log q] = -\sum_x p(x)\log q(x)\]
 which measures the divergence between the two discrete probability distributions. In addition, we added standard weight decay, i.e. L2-loss, for the weights of the \texttt{local3} and \texttt{local4} layers for weight regularization.
 
@@ -162,7 +162,7 @@ One technique which improved model accuracy by $3\%$ when implemented was using 
 
 \subsubsection{Minimizing Overfitting} \label{overfitting}
 
-Since the size of our training set was 28,709 labeled examples, and our neural net needed to go through many more than 28,000 examples to achieve convergence, we employed a few techniques to ensure that our convolutional neural net did not overfit to the training set.
+Since the size of our training set was 28,709 labeled examples, and our neural net needed to go through many more than 28,000 examples to achieve convergence, we employed a few techniques to ensure that our convolutional neural net did not overfit to the training set. This is also a risk because our top layers were fully connected, which means that our model could easily overfit using them.
 
 First off, we implemented learning rate decay on our convolutional neural net, so that the learning rate decreased as it had been trained through more examples. We used exponential decay, so that that the learning rate decayed by a factor of $0.1$ after training through $1,200,000$ examples, and we had it decay in a step change manner as is visible in Figure \ref{fig:cnnloss}. We found that the step change learning rate decay worked better than a continuous exponential decay. This could be because maintaining a high learning rate initially could ensure that the CNN was trained towards a good local optimum in fewer steps, whereas a steadily decreasing learning rate could limit the range of the neural network.
 
@@ -176,7 +176,7 @@ For training in particular, we would do a few more distortions to artificially i
 
 \begin{figure}
 \centering
-\includegraphics[width=0.45\textwidth]{grid_search_pca}
+\includegraphics[width=0.5\textwidth]{grid_search_pca}
 \caption{\label{fig:grid_pca} Cross validation on SVM with PCA features. Test accuracy for best
 parameters was 41\%.}
 \end{figure}
@@ -185,7 +185,7 @@ parameters was 41\%.}
 
 \begin{figure}
 \centering
-\includegraphics[width=0.45\textwidth]{grid_search_landmarks}
+\includegraphics[width=0.5\textwidth]{grid_search_landmarks}
 \caption{\label{fig:grid_pca} Cross validation on SVM with facial landmarks. Test accuracy for best
 parameters was 52\%.}
 \end{figure}
@@ -197,13 +197,9 @@ We trained our model on Google Cloud Compute server with 4 CPUs and 15GB RAM for
 
 Our model achieved a correct classification rate of $65.2\%$ on the 7-way classification problem, which is comparable to the $69\%$ correct classification rate of the winning model on Kaggle. Our model correctly determines the correct label within the two highest logits with $82.3\%$ accuracy, and determines the correct label within the three highest logits with $90.5\%$ accuracy.
 
-We can see how the total loss and the loss across the layers changed along with the learning rate in Figure \ref{fig:cnnloss}. There are a couple interesting patterns. First, the weight decay loss on the \texttt{local3} and \texttt{local4} layers fell very quickly (by the 5000th step) and did not decrease past that, while still decreasing the cross entropy loss. The \texttt{local4} loss even steadily. 
+We can see how the total loss and the loss across the layers changed along with the learning rate in Figure \ref{fig:cnnloss}. There are a couple interesting patterns. First, the weight decay loss on the \texttt{local3} and \texttt{local4} layers fell very quickly (by the 5000th step) and did not decrease past that, while still decreasing the cross entropy loss. The \texttt{local4} loss even increased slightly. 
 
-In addition, the total loss, and in particular the cross entropy loss, dropped dramatically once the learning rate dropped according to the exponential learning rate decay schedule. This makes sense, since it allows the neural net to much more finely optimize the weights on the space it settled in with the larger learning rate. Finally, at the extremely small learning rate of $0.001$, the loss converged at around $0.5$, and any changes in the model at this point did not increase the classification success on the test set.
-
-We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}.
-
-
+In addition, the total loss, and in particular the cross entropy loss, dropped dramatically once the learning rate dropped according to the exponential learning rate decay schedule. This makes sense, since it allows the neural net to much more finely optimize the weights on the space it settled in with the larger learning rate. Finally, at the extremely small learning rate of $0.001$, the loss converged at around $0.5$, and any additional learning in the model at this point did not increase the classification success on the test set.
 
 \begin{figure*}
 	\centering
@@ -215,6 +211,12 @@ We can also see the change in the parameters of the model, weights and biases, a
 	\caption{The total loss, cross entropy, and learning rate of the convolutional neural net over time. The x-axis is the step, and the y-axis is the value.}
 	\label{fig:cnnloss}
 \end{figure*}
+
+We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}. We can see that the regularized layers \texttt{local3} and \texttt{local4} had weights that quickly converged and stayed with approximately the same distribution. The weights on the non-regularized layers, i.e. \texttt{conv1}, \texttt{conv2}, and \texttt{softmax\_linear}, mostly diverged as steps went on though, but with the smaller learning rate they stopped increasing and maintained approximately the same distribution. Finally, it is interesting that the biases for layers \texttt{conv1} and \texttt{local4} were learned to be extremely skewed distributions. This indicates that the performance of the network could potentially be improved by initializing those weights at a more skewed distribution, decreasing the initial learning time.
+
+One feature which could be implemented and would likely improve the performance of the algorithm is dropout, which could further prevent overfitting. This would randomly drop individual nodes with a certain probability $p$ at each step, and would only increase necessary training time by a factor $1/p$.
+
+
 
 \begin{figure*}
 	\centering
