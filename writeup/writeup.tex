@@ -78,6 +78,16 @@ ICML-2013 workshop in representation learning.
 
 To implement our convolutional neural network, we used Google's TensorFlow neural network library.
 
+\subsubsection{Minimizing Overfitting}
+
+Since the size of our training set was 28,709 labeled examples, and our neural net needed to go through many more than 28,000 examples to achieve convergence, we employed a few techniques to ensure that our convolutional neural net did not overfit to the training set.
+
+First off, we implemented learning rate decay on our convolutional neural net, so that the learning rate decreased as it had been trained through more examples. We used exponential decay, so that that the learning rate decayed by a factor of $0.1$ after training through $1,200,000$ examples, and we had it decay in a step change manner as is visible in Figure \ref{fig:cnnloss}. We found that the step change learning rate decay worked better than a continuous exponential decay. This is probably because maintaining a high learning rate initially could ensure that the CNN was trained towards a good local optimum in fewer steps, whereas a steadily decreasing learning rate could limit the range of the neural network.
+
+In addition, we implemented distortion of the images while training to artificially increase the size of our training set, and make our convolutional neural net more robust to slightly distorted inputs. We processed our images in a few different ways. We would crop our 48 by 48 pixel images to a 40 by 40 pixel box, centrally for model evaluation and randomly for training. Then we approximately whiten the photos, scaling the pixel values linearly so that they pixel values have a mean of 0 and a standard deviation of 1, essentially normalizing them. This ensures consistent inputs to our neural network.
+
+For training in particular, we would do a few more distortions to artificially increase our training set. We randomly flipped the image from left to right, randomly distorted the image brightness, and 	randomly distorted the image contrast for each image. These changes to randomly distort the images greatly improved the performance of the model.
+
 \begin{figure}
 	\centering
 	\includegraphics[width=3.25in]{inference_graph}
@@ -90,9 +100,18 @@ To implement our convolutional neural network, we used Google's TensorFlow neura
 \begin{figure}
 	\centering
 	\includegraphics[width=3in]{total_loss}
+	\includegraphics[width=3in]{cross_entropy}
 	\includegraphics[width=3in]{learning_rate}
-	\caption{The total loss and learning rate of the convolutional neural net over time.}
+	\caption{The total loss, cross entropy, and learning rate of the convolutional neural net over time.}
 	\label{fig:cnnloss}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=3in]{local3_loss}
+	\includegraphics[width=3in]{local4_loss}
+	\caption{The loss on the local3 layer and local4 layer over time in the convolutional neural net.}
+	\label{fig:layer_loss}
 \end{figure}
 
 
