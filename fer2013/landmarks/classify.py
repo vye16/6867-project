@@ -23,4 +23,4 @@ if __name__=="__main__":
 
     grid = make_grid(clf.grid_scores_, len(cvals), len(gamvals))
     print grid
-    make_heatmap(grid, cvals, gamvals, "C", "gamma")
+#    make_heatmap(grid, cvals, gamvals, "C", "gamma")

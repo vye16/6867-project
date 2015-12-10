@@ -4,7 +4,7 @@
 \usepackage{amsmath, amssymb}
 \usepackage{enumerate}
 \usepackage{titleps}
-\usepackage[top=1.25in,bottom=1in,right=0.8in,left=0.8in]{geometry}
+\usepackage[top=1.25in,bottom=1in,right=1in,left=1in]{geometry}
 \usepackage[parfill]{parskip}
 \usepackage{titling}
 \usepackage{hyperref}
@@ -72,7 +72,23 @@ features in a face, and could also serve as good features for emotion classifica
 
 \subsection{Kernel SVM}
 
-Kernel SVM is 
+Support vector machines are widely used in classification problems, and is an
+optimization problem that can be solved in its dual form,
+\begin{align}
+\label{softsvm}
+\max_{\alpha \in \mathbb{R}^n} \sum_{i=1}^n \alpha_i - \frac{1}{2}\sum_i\sum_j
+\alpha_i\alpha_j y^{(i)}y^{(j)}K(x^{(i)}, x^{(j)}) & \\
+\text{s.t. } 0 \le \alpha_i \le C & \\
+\sum_i \alpha_i y^{(i)} = 0 &
+\end{align}
+where $C$ parameterizes the soft-margin cost function, and $K(x^{(i)}, x^{(j)})$
+is our kernel function, which allows us to model nonlinear classifiers.
+For our multiclass classification problem, we use the nonlinear radial basis
+kernel function,
+\begin{equation}
+K(x, z) = \exp{(\gamma(x - z)^2)}
+\end{equation}
+where $\gamma$ is a free parameter.
 
 \subsection{Neural Network}
 
@@ -90,8 +106,7 @@ In addition, CNNs utilize shared parameterizations (weight vector and bias) acro
 
 For this project, we primarily used a dataset released by Kaggle as a part of an
 ICML-2013 workshop in representation learning. This dataset included 28,709 labeled
-training images, and two labeled test sets of 3,589 images. We also used images from
-........
+training images, and two labeled test sets of 3,589 images.
 
 \subsection{PCA}
 We used \texttt{sklearn}'s implementation of PCA to extract eigenfaces from our data.
