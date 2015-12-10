@@ -47,7 +47,7 @@ been studied extensively, using many different approaches. In the past, work on
 facial image analysis concerned robust detection and identification of individuals
 \cite{Samal}. More recently, work has expanded into classification of faces based on
 features extracted from facial data, as done in \cite{Bartlett}, and using more complex
-systems like convolutional neural networks, as done in \cite{Lawrence} and \cite{Matsugi}.
+systems like convolutional neural networks, as done in \cite{Lawrence} and \cite{Matsugu}.
 In our project, we compared classification using features manually extracted from
 facial images against classification using a convolutional neural net, which learns
 the significant features of images through convolutional and pooling neural layers.
@@ -338,7 +338,7 @@ In addition, the total loss, and in particular the cross entropy loss, dropped d
 	\includegraphics[width=2.4in]{cross_entropy}
 	\includegraphics[width=2.4in]{local3_loss}
 	\includegraphics[width=2.4in]{local4_loss}
-	\caption{The total loss, cross entropy, and learning rate of the convolutional neural net over time. The x-axis is the step, and the y-axis is the value.}
+	\caption{The learning rate, total loss, cross entropy loss, and regularized loss of layers \texttt{local3} and \texttt{local4} of the convolutional neural net over time. The x-axis is the step, and the y-axis is the value.}
 	\label{fig:cnnloss}
 \end{figure}
 
@@ -354,7 +354,7 @@ In addition, the total loss, and in particular the cross entropy loss, dropped d
 \end{figure*}
 
 
-We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}. We can see that the regularized layers \texttt{local3} and \texttt{local4} had weights that quickly converged and stayed with approximately the same distribution. The weights on the non-regularized layers, i.e. \texttt{conv1}, \texttt{conv2}, and \texttt{softmax\_linear}, mostly diverged as steps went on though, but with the smaller learning rate they stopped increasing and maintained approximately the same distribution. Finally, it is interesting that the biases for layers \texttt{conv1} and \texttt{local4} were learned to be extremely skewed distributions. This indicates that the performance of the network could potentially be improved by initializing those weights at a more skewed distribution, decreasing the initial learning time.
+We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}. We can see that the regularized layers \texttt{local3} and \texttt{local4} had weights that quickly converged and stayed with approximately the same distribution. The weights on the non-regularized layers, i.e. \texttt{conv1}, \texttt{conv2}, and \texttt{softmax\_linear}, mostly diverged with each step, but with the smaller learning rate they stopped increasing and maintained approximately the same distribution. Finally, it is interesting that the biases for layers \texttt{conv1} and \texttt{local4} were learned to be extremely skewed distributions. This indicates that the performance of the network could potentially be improved by initializing those weights at a more skewed distribution, decreasing the initial learning time.
 
 One feature which could be implemented and would likely improve the performance of the algorithm is dropout, which could further prevent overfitting. This would randomly drop individual nodes with a certain probability $p$ at each step, and would increase necessary training time by a factor $1/p$.
 
