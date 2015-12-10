@@ -42,7 +42,13 @@ received 65\% classification accuracy.
 
 \section{Introduction}
 
-In this project, we compared classification using features manually extracted from
+Detecting facial expressions is an area of research within computer vision that has
+been studied extensively, using many different approaches. In the past, work on
+facial image analysis concerned robust detection and identification of individuals
+\cite{Samal}. More recently, work has expanded into classification of faces based on
+features extracted from facial data, as done in \cite{Bartlett}, and using more complex
+systems like convolutional neural networks, as done in \cite{Lawrence} and \cite{Matsugi}.
+In our project, we compared classification using features manually extracted from
 facial images against classification using a convolutional neural net, which learns
 the significant features of images through convolutional and pooling neural layers.
 The two manual feature extraction methods we explored were principal component
@@ -52,7 +58,7 @@ classified using a kernel support vector machine (SVM) and a neural network.
 \subsection{PCA}
 
 In facial recognition, PCA is used in generating a low-dimensional representation of
-face images as linear combinations of the first $k$ eigenfaces of training data.
+faces as linear combinations of the first $k$ eigenfaces of training data.
 Eigenfaces are the eigenvectors of the training data's covariance matrix; the first
 eigenfaces are the vectors along which the training data shows the highest variance.
 Thus, we can express a facial image vector of thousands of pixels in terms of
@@ -99,9 +105,18 @@ of predictions. In this project, we explored the performance of both methods.
 
 \subsection{Convolutional Neural Network}
 
-Convolutional neural networks (CNNs) are artificial neural networks that work particularly well for image data. The structure of CNNs exploits strong local correlation in the inputs. This is done by enforcing local connectivity between neurons of adjacent layers. The inputs of a hidden unit at a particular layer $n$ are some locally-connected subset of the units of the previous layer $n-1$, done in such a way that the input to layer $n$ represent some tile of the units of layer $n-1$, where the tiles are overlapping.
+Convolutional neural networks (CNNs) are artificial neural networks that work particularly
+well for image data. The structure of CNNs exploits strong local correlation in the inputs.
+This is done by enforcing local connectivity between neurons of adjacent layers.
+The inputs of a hidden unit at layer $n$ are some locally-connected subset of
+the units of the previous layer $n-1$, done in such a way that the input to layer $n$
+represent some tile of the units of layer $n-1$, with overlapping tiles.
 
-In addition, CNNs utilize shared parameterizations (weight vector and bias) across layers. By constraining the same types of weights across layers, essentially replicating units across layers, allows for features to be detected regardless to their position in the initial input, making the network much more robust to real world image data. Additionally, by constraining multiple weights to be the same reduces the parameters to be learnt, increasing learning efficiency.
+In addition, CNNs utilize shared parameterizations (weight vector and bias) across layers.
+By constraining the same types of weights across layers, essentially replicating units across
+layers, allows for features to be detected regardless to their position in the initial input,
+making the network much more robust to real world image data. Constraining multiple weights
+also reduces the number of free parameters, increasing learning efficiency.
 
 \section{Experimental Details}
 
@@ -109,7 +124,9 @@ In addition, CNNs utilize shared parameterizations (weight vector and bias) acro
 
 For this project, we primarily used a dataset released by Kaggle as a part of an
 ICML-2013 workshop in representation learning. This dataset included 28,709 labeled
-training images, and two labeled test sets of 3,589 images.
+training images, and two labeled test sets of 3,589 images. Faces were labeled with
+one of 7 labels: 0 (Angry), 1 (Disgust), 2 (Fear), 3 (Happy), 4 (Sad), 5 (Surprised),
+and 6 (Neutral).
 
 \subsection{PCA}
 We used SciPy's implementation of PCA to extract eigenfaces from our data.
@@ -161,19 +178,32 @@ In particular, we use fully connected layers instead of locally connected layers
 	\label{fig:inference}
 \end{figure}
 
-We implemented a deep CNN with five layers, which are from front to back: \texttt{conv1}, \texttt{conv2}, \texttt{local3}, \texttt{local4}, and \texttt{softmax\_linear}. This structure is illustrated in Figure \ref{fig:inference}. 
+We implemented a deep CNN with five layers, which we will refer to as \texttt{conv1}, \texttt{conv2}, \texttt{local3}, \texttt{local4}, and \texttt{softmax\_linear}. This structure is illustrated in Figure \ref{fig:inference}. 
 
-The layers \texttt{conv1} and \texttt{conv2} are convolution layers, which divides the image into overlapping tiles and use those as inputs to the next layer. In detail, the expression is
+The two convolution layers, \texttt{conv1} and \texttt{conv2}, divide the image into overlapping
+tiles and use those as inputs to the next layer. That is, the output can be written as
 \[ y(i, j) = \sum_{di, dj} x(s_1i + di, s_2j + dj) f(di, dj)\]
-where $y(\cdot, \cdot)$ is the output, $di$ and $dj$ are changes which range over the tile size, $s_1$ and $s_2$ are strides which measure how much you move between each convolution window across each dimension, $x(\cdot, \cdot)$ is the input, and $f(\cdot, \cdot)$ are filters, which are the weights for the layer. We didn't employ any regularization on these convolution layers, and we used window sizes of 5 by 5 pixels with a strides of 1.
+where $y(\cdot, \cdot)$ is the output, $di$ and $dj$ are changes which range over the tile size,
+$s_1$ and $s_2$ are strides between convolution tiles across each dimension,
+$x(\cdot, \cdot)$ is the input, and $f(\cdot, \cdot)$ are filters, i.e. the weights for the layer.
+For our model, we used 5 by 5 pixel tiles with 1 pixel strides. We did not regularize these
+convolution layers.
 
-As illustrated in Figure \ref{fig:inference}, after each convolution layer, we performed a \texttt{pool1} operation and a \texttt{norm1} operation. The \texttt{pool1} operation is max pooling, which will transform the input to take the maxima in tiles similarly to the convolution step. In detail,
+As illustrated in Figure \ref{fig:inference}, after each convolution layer, we performed a
+\texttt{pool} operation and a \texttt{norm} operation. The max pooling operation takes the
+maxima among input tiles. That is,
 \[ y(i, j) = \max_{di, dj} x(s_1i + di, s_2j + dj)\]
-with each term defined as before. Note that this is not a layer because there are no weights. The \texttt{norm1} operation is a local response normalization response, where each input is normalized by dividing it by the squared sum of inputs within a certain radius of it. This technique is described in more detail in \cite{Krizhevsky}, and serves as form of ``brightness normalization" on the input.
+Note that this is not a layer because there are no weights. The \texttt{norm} operation is a
+local response normalization response, where each input is normalized by dividing it by the squared
+sum of inputs within a certain radius of it. This technique is described in more detail in
+\cite{Krizhevsky}, and serves as form of ``brightness normalization" on the input.
 
-The \texttt{local3} and \texttt{local4} are fully connected layers with rectified linear activation according to $f(x) = \max(x, 0)$. We employ regularization on both of these layers by adding the L2-loss of weights on both layers to our total loss function. This is especially important because they are fully connected layers, which are very prone to overfitting.
+The \texttt{local3} and \texttt{local4} are fully connected layers with rectified linear activation
+$f(x) = \max(x, 0)$. We regularize both of these layers with the L2-loss of weights because
+these layers are fully connected and very prone to overfitting.
 
-Finally, the \texttt{softmax\_linear} layer is linear transformation layer that produces unnormalized logits according to a simple linear transformation based on learned weights and biases.
+Finally, the \texttt{softmax\_linear} layer is the linear transformation layer that produces the
+unnormalized logits used to predict the class of an input.
 
 \subsubsection{Training}
 
@@ -182,8 +212,6 @@ The loss function we minimized was primarily the cross entropy between the multi
 which measures the divergence between the two discrete probability distributions. In addition, we added standard weight decay, i.e. L2-loss, for the weights of the \texttt{local3} and \texttt{local4} layers for weight regularization.
 
 For training, we fed the model randomly distorted training examples (see subsection \ref{overfitting}) in randomly shuffled batches of 128 samples each. For each of these examples, we determined our loss based on our current inference. After each batch, we performed back propagation using gradient descent to learn the weights, and we called each time we finished a batch a step. 
-
-Since distorting inputs on disk is computationally expensive and bottlenecks the process, we spawn 16 threads which each asynchronously generated distorted inputs and add them to a queue which the training process pulls from.
 
 One technique which improved model accuracy by $3\%$ when implemented was using moving averages of the learned variables. During training, we calculate the moving averages of all learned variables, and during model evaluation, we substitute all learned parameters with the moving averages instead.
 
@@ -328,12 +356,27 @@ In addition, the total loss, and in particular the cross entropy loss, dropped d
 
 We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}. We can see that the regularized layers \texttt{local3} and \texttt{local4} had weights that quickly converged and stayed with approximately the same distribution. The weights on the non-regularized layers, i.e. \texttt{conv1}, \texttt{conv2}, and \texttt{softmax\_linear}, mostly diverged as steps went on though, but with the smaller learning rate they stopped increasing and maintained approximately the same distribution. Finally, it is interesting that the biases for layers \texttt{conv1} and \texttt{local4} were learned to be extremely skewed distributions. This indicates that the performance of the network could potentially be improved by initializing those weights at a more skewed distribution, decreasing the initial learning time.
 
+One feature which could be implemented and would likely improve the performance of the algorithm is dropout, which could further prevent overfitting. This would randomly drop individual nodes with a certain probability $p$ at each step, and would increase necessary training time by a factor $1/p$.
 
-One feature which could be implemented and would likely improve the performance of the algorithm is dropout, which could further prevent overfitting. This would randomly drop individual nodes with a certain probability $p$ at each step, and would only increase necessary training time by a factor $1/p$.
+\section{Conclusion}
+In this project we explored the classification of facial images into seven emotion classes: anger, disgust,
+fear, happy, sad, surprise, and neutral. We found that the representation of faces using eigenfaces from
+PCA was not robust or descriptive enough for successful classification; the variance between features was
+explained more by the differences in individual faces than by the differences in expressions. We obtained
+test accuracy of 41\% using this method on our dataset. We found that the representation using facial
+landmarks extracted from subject faces was more succesful. However, the number of landmarks and the accuracy
+of the landmarks extracted were not particularly high, and we obtained a test accuracy of 52\% using this
+method on our dataset.
 
+When we applied a convolutional neural network with two convolutional layers and two regularized fully
+connected hidden layers, we found that test accuracy improved significantly. We also found that certain
+practices, such as randomly distorting, highlighting, darkening, cropping, and flipping images, during
+training helped build a more robust predictor. Our convolutional network obtained a test accuracy of 65\%
+when applied to our dataset. We also found that 82\% of the time, the true label was in the top 2 CNN
+predictions, and 91\% of the time the true label was in the top 3 predictions. Further work on this
+problem could involve including dropout to further reduce overfitting during training and exploring
+different network structures.
 
-
-\subsection{Comparison between the two}
 
 \begin{thebibliography}{9}
 \bibitem{Lawrence}
@@ -355,6 +398,17 @@ Kazemi, V.; Sullivan, J. (2014)
 Krizhevsky, A.; Sutskever; Hinton, I.; Hinton, G. (2012)
 ``ImageNet Classification with Deep Convolutional Neural Networks"
 \textit{Advances in Neural Information Processing Systems} 25 (1):1097-1105
+
+\bibitem{Samal}
+Samal, A.; Iyengar, P. (1992)
+``Automatic Recognition and Analysis of Human Faces and Facial Expressions: A Survey"
+\textit{Pattern Recognition} 25 (1):65-77
+
+\bibitem{Bartlett}
+Bartlett, M. S.; Littlewort, G.; Frank, M.; Lainscsek, C.; Fasal, I.; Movellan, J. (2005)
+``Recognizing Facial Expression: Machine Learning and Application to Spontaneous Behavior"
+\textit{The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}
+
 \end{thebibliography}
 
 
