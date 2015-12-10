@@ -4,7 +4,7 @@
 \usepackage{amsmath, amssymb}
 \usepackage{enumerate}
 \usepackage{titleps}
-\usepackage[top=1.25in,bottom=1in,right=1in,left=1in]{geometry}
+\usepackage[top=0.75in,bottom=0.75in,right=0.5in,left=0.5in]{geometry}
 \usepackage[parfill]{parskip}
 \usepackage{titling}
 \usepackage{hyperref}
@@ -124,7 +124,7 @@ landmarks in our images. We detected 68 notable points for each facial image, wh
 we then used as features for our classification. The landmarks found for each image
 are shown in Figure ~\ref{fig:landmarks}.
 
-\begin{figure}[htb]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.5\textwidth]{landmarks}
 \caption{\label{fig:landmarks} The first 12 test images with labeled facial landmarks
@@ -154,7 +154,7 @@ In particular, we use fully connected layers instead of locally connected layers
 
 \subsubsection{Network Structure}
 
-\begin{figure}[htb]
+\begin{figure}[!htbp]
 	\centering
 	\includegraphics[width=\linewidth]{inference_graph}
 	\caption{TensorFlow computation graph for the neural network in the CNN we implemented, illustrating each of the layers and computation done in between each layer.}
@@ -210,13 +210,15 @@ we found that the features extracted from PCA were not very powerful representat
 of the data. In Figure ~\ref{fig:pca}, we show the images obtained from PCA against
 the original images in the test set.
 
-\begin{figure}[htb]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.8\linewidth]{original_test}
 \includegraphics[width=0.8\linewidth]{projected_test}
 \caption{\label{fig:pca} The first twelve images in the test set projected onto the
 150-dimensional eigenface basis.}
 \end{figure}
+
+
 
 We then optimized RBF SVM on the new features, and found that the optimal set of
 parameters $C=5$ and $\gamma = 0.005$ yielded a test accuracy of 41\%. The model
@@ -225,7 +227,7 @@ we indeed have converged upon at least a local minimum over the ranges $C$ = \{
 1, 5, 10, 50, 100, 500, 1000, 5000\} and $\gamma$ = \{5e-5, 0.0001, 0.0005, 0.001,
 0.005, 0.01\}.
 
-\begin{figure}[htb]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.5\textwidth]{grid_search_pca}
 \caption{\label{fig:grid_pca} Cross validation on SVM with PCA features.
@@ -237,7 +239,7 @@ although different combinations of parameters yielded different convergence beha
 those we tried all converged to at most accuracy of 40\%. The convergence of a
 two-layer neural net with 80 hidden nodes is shown in Figure ~\ref{fig:pca_nnet}.
 
-\begin{figure}[htb]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{pca_nn_accuracy}
 \caption{\label{fig:pca_nnet} The convergence of a two-layer neural net with 80
@@ -261,7 +263,7 @@ improvement over the features extracted using PCA. Again we see that we have
 converged upon a minimum over the ranges $C$ = \{1, 5, 10, 50, 100, 500\} and
 $\gamma$ = \{1e-7, 5e-7, 1e-6, 5e-6, 1e-5, 5e-5\}.
 
-\begin{figure}[htb]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.5\textwidth]{grid_search_landmarks}
 \caption{\label{fig:grid_landmarks} Cross validation on SVM with facial landmarks.
@@ -273,7 +275,7 @@ the models we tried all converged to the same value of around 50\%, albeit with
 slightly different convergence behaviors. The convergence of a two-layer neural net
 with 100 hidden nodes is shown in Figure ~\ref{fig:landmarks_nnet}.
 
-\begin{figure}[htb]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{landmarks_nn_accuracy}
 \caption{\label{fig:landmarks_nnet} The convergence of a two-layer neural net with 100
@@ -301,7 +303,7 @@ We can see how the total loss and the loss across the layers changed along with 
 
 In addition, the total loss, and in particular the cross entropy loss, dropped dramatically once the learning rate dropped according to the exponential learning rate decay schedule. This makes sense, since it allows the neural net to much more finely optimize the weights on the space it settled in with the larger learning rate. Finally, at the extremely small learning rate of $0.001$, the loss converged at around $0.5$, and any additional learning in the model at this point did not increase the classification success on the test set.
 
-\begin{figure*}
+\begin{figure}[htbp]
 	\centering
 	\includegraphics[width=2.4in]{learning_rate}
 	\includegraphics[width=2.4in]{total_loss}
@@ -310,13 +312,7 @@ In addition, the total loss, and in particular the cross entropy loss, dropped d
 	\includegraphics[width=2.4in]{local4_loss}
 	\caption{The total loss, cross entropy, and learning rate of the convolutional neural net over time. The x-axis is the step, and the y-axis is the value.}
 	\label{fig:cnnloss}
-\end{figure*}
-
-We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}. We can see that the regularized layers \texttt{local3} and \texttt{local4} had weights that quickly converged and stayed with approximately the same distribution. The weights on the non-regularized layers, i.e. \texttt{conv1}, \texttt{conv2}, and \texttt{softmax\_linear}, mostly diverged as steps went on though, but with the smaller learning rate they stopped increasing and maintained approximately the same distribution. Finally, it is interesting that the biases for layers \texttt{conv1} and \texttt{local4} were learned to be extremely skewed distributions. This indicates that the performance of the network could potentially be improved by initializing those weights at a more skewed distribution, decreasing the initial learning time.
-
-One feature which could be implemented and would likely improve the performance of the algorithm is dropout, which could further prevent overfitting. This would randomly drop individual nodes with a certain probability $p$ at each step, and would only increase necessary training time by a factor $1/p$.
-
-
+\end{figure}
 
 \begin{figure*}
 	\centering
@@ -329,8 +325,15 @@ One feature which could be implemented and would likely improve the performance 
 	\label{fig:params}
 \end{figure*}
 
-\subsection{Comparison between the two}
 
+We can also see the change in the parameters of the model, weights and biases, and how they changed over time in Figure \ref{fig:params}. We can see that the regularized layers \texttt{local3} and \texttt{local4} had weights that quickly converged and stayed with approximately the same distribution. The weights on the non-regularized layers, i.e. \texttt{conv1}, \texttt{conv2}, and \texttt{softmax\_linear}, mostly diverged as steps went on though, but with the smaller learning rate they stopped increasing and maintained approximately the same distribution. Finally, it is interesting that the biases for layers \texttt{conv1} and \texttt{local4} were learned to be extremely skewed distributions. This indicates that the performance of the network could potentially be improved by initializing those weights at a more skewed distribution, decreasing the initial learning time.
+
+
+One feature which could be implemented and would likely improve the performance of the algorithm is dropout, which could further prevent overfitting. This would randomly drop individual nodes with a certain probability $p$ at each step, and would only increase necessary training time by a factor $1/p$.
+
+
+
+\subsection{Comparison between the two}
 
 \begin{thebibliography}{9}
 \bibitem{Lawrence}
