@@ -1,4 +1,4 @@
-\documentclass[11pt, twocolumn, twoside]{article}
+\documentclass[10pt, twocolumn, twoside]{article}
 
 \usepackage{graphicx}
 \usepackage{amsmath, amssymb}
@@ -70,29 +70,32 @@ transformations, and showed less than 5\% error on the LFPW dataset.
 The facial landmarks (eyes, eyebrows, nose, mouth) are intuitively the most expressive 
 features in a face, and could also serve as good features for emotion classification.
 
-\subsection{Kernel SVM}
+\subsection{Multiclass Classification}
 
 Support vector machines are widely used in classification problems, and is an
 optimization problem that can be solved in its dual form,
-\begin{align}
+\begin{align*}
 \label{softsvm}
 \max_{\alpha \in \mathbb{R}^n} \sum_{i=1}^n \alpha_i - \frac{1}{2}\sum_i\sum_j
 \alpha_i\alpha_j y^{(i)}y^{(j)}K(x^{(i)}, x^{(j)}) & \\
 \text{s.t. } 0 \le \alpha_i \le C & \\
 \sum_i \alpha_i y^{(i)} = 0 &
-\end{align}
+\end{align*}
 where $C$ parameterizes the soft-margin cost function, and $K(x^{(i)}, x^{(j)})$
 is our kernel function, which allows us to model nonlinear classifiers.
 For our multiclass classification problem, we use the nonlinear radial basis
 kernel function,
-\begin{equation}
+\begin{equation*}
 K(x, z) = \exp{(\gamma(x - z)^2)}
-\end{equation}
-where $\gamma$ is a free parameter.
+\end{equation*}
+where $\gamma$ is a free parameter. The performance of the kernalized SVM is
+highly dependent on these free parameters $C$ and $\gamma$.
 
-\subsection{Neural Network}
-
-An artificial neural network uses
+Neural networks are also widely used in multiclass classification problems,
+because hidden layers with nonlinear activation functions can be made to model
+nonlinear classifiers well. Here, the number of nodes in each hidden layer, as
+well as the number of hidden layers in each network, highly determines the accuracy
+of predictions. In this project, we explored the performance of both methods.
 
 \subsection{Convolutional Neural Network}
 
@@ -109,28 +112,38 @@ ICML-2013 workshop in representation learning. This dataset included 28,709 labe
 training images, and two labeled test sets of 3,589 images.
 
 \subsection{PCA}
-We used \texttt{sklearn}'s implementation of PCA to extract eigenfaces from our data.
-
-\begin{figure}
-\centering
-\includegraphics[width=0.5\textwidth]{eigenfaces}
-\caption{\label{fig:eigenfaces} The first 12 eigenfaces generated through PCA from the
-training data.}
-\end{figure}
+We used SciPy's implementation of PCA to extract eigenfaces from our data.
+In our experiments, we optimized the number of principal components $k$ we took as
+our eigenface basis. Our features were then the orthogonal projection of each image
+onto this basis. When performing PCA, we added whitening to ensure that eigenfaces
+were uncorrelated.
 
 \subsection{Facial Landmarks}
+We used the open source implementation of \cite{Kazemi}, DLib, to detect facial
+landmarks in our images. We detected 68 notable points for each facial image, which
+we then used as features for our classification. The landmarks found for each image
+are shown in Figure ~\ref{fig:landmarks}.
 
-
-\begin{figure}
+\begin{figure}[htb]
 \centering
 \includegraphics[width=0.5\textwidth]{landmarks}
 \caption{\label{fig:landmarks} The first 12 test images with labeled facial landmarks
 as generated from DLib's shape recognizer.}
 \end{figure}
 
-\subsection{Kernel SVM}
+\subsection{Multiclass Classification}
 
-\subsection{Neural Network}
+We used SVM with a radial basis kernel to classify our manually
+extracted features. We used SciPy's implementation of SVM for these purposes
+To optimize the performance of SVM, we performed grid
+search cross-validation on the training and validation data to optimize the
+free parameters $C$ and $\gamma$ in our model.
+
+We also used neural networks with one to two hidden layers to classify
+our features. We used Google's TensorFlow neural network library for these
+purposes. For both one-layer and two-layer neural networks, we performed 
+model selection on the number of hidden nodes and learning rate to optimize
+the final performance.
 
 \subsection{Convolutional Neural Network}
 
@@ -141,9 +154,9 @@ In particular, we use fully connected layers instead of locally connected layers
 
 \subsubsection{Network Structure}
 
-\begin{figure}
+\begin{figure}[htb]
 	\centering
-	\includegraphics[width=3.7in]{inference_graph}
+	\includegraphics[width=\linewidth]{inference_graph}
 	\caption{TensorFlow computation graph for the neural network in the CNN we implemented, illustrating each of the layers and computation done in between each layer.}
 	\label{fig:inference}
 \end{figure}
@@ -168,7 +181,7 @@ The loss function we minimized was primarily the cross entropy between the multi
 \[H(p, q) = E_p[-\log q] = -\sum_x p(x)\log q(x)\]
 which measures the divergence between the two discrete probability distributions. In addition, we added standard weight decay, i.e. L2-loss, for the weights of the \texttt{local3} and \texttt{local4} layers for weight regularization.
 
-For training, we fed the model randomly distorted training examples (see subsection \ref{overfitting}) in randomly shuffled batches of 128 samples each. For each of these examples, we would determine our loss based on our current inference. After each batch, we performed back propagation using gradient descent to learn the weights, and we called each time we finished a batch a step. 
+For training, we fed the model randomly distorted training examples (see subsection \ref{overfitting}) in randomly shuffled batches of 128 samples each. For each of these examples, we determined our loss based on our current inference. After each batch, we performed back propagation using gradient descent to learn the weights, and we called each time we finished a batch a step. 
 
 Since distorting inputs on disk is computationally expensive and bottlenecks the process, we spawn 16 threads which each asynchronously generated distorted inputs and add them to a queue which the training process pulls from.
 
@@ -179,32 +192,104 @@ One technique which improved model accuracy by $3\%$ when implemented was using 
 
 Since the size of our training set was 28,709 labeled examples, and our neural net needed to go through many more than 28,000 examples to achieve convergence, we employed a few techniques to ensure that our convolutional neural net did not overfit to the training set. This is also a risk because our top layers were fully connected, which means that our model could easily overfit using them.
 
-First off, we implemented learning rate decay on our convolutional neural net, so that the learning rate decreased as it had been trained through more examples. We used exponential decay, so that that the learning rate decayed by a factor of $0.1$ after training through $1,200,000$ examples, and we had it decay in a step change manner as is visible in Figure \ref{fig:cnnloss}. We found that the step change learning rate decay worked better than a continuous exponential decay. This could be because maintaining a high learning rate initially could ensure that the CNN was trained towards a good local optimum in fewer steps, whereas a steadily decreasing learning rate could limit the range of the neural network.
+We first implemented learning rate decay on our convolutional neural net, so that the learning rate decreased as it had been trained through more examples. We used exponential decay, so that that the learning rate decayed by a factor of $0.1$ after training through $1,200,000$ examples, and we had it decay in a step change manner as is visible in Figure \ref{fig:cnnloss}. We found that the step change learning rate decay worked better than a continuous exponential decay. This could be because maintaining a high learning rate initially could ensure that the CNN was trained towards a good local optimum in fewer steps, whereas a steadily decreasing learning rate could limit the range of the neural network.
 
-In addition, we implemented distortion of the images while training to artificially increase the size of our training set, and make our convolutional neural net more robust to slightly distorted inputs. We processed our images in a few different ways. We would crop our 48 by 48 pixel images to a 40 by 40 pixel box, centrally for model evaluation and randomly for training. Then we approximately whiten the photos, scaling the pixel values linearly so that they pixel values have a mean of 0 and a standard deviation of 1, essentially normalizing them. This ensures consistent inputs to our neural network.
+In addition, we implemented distortion of the images while training to artificially increase the size of our training set, and make our convolutional neural net more robust to slightly distorted inputs. We processed our images in a few different ways. We cropped our 48 by 48 pixel images to a 40 by 40 pixel box, centrally for model evaluation and randomly for training. Then we approximately whiten the photos, scaling the pixel values linearly so that they pixel values have a mean of 0 and a standard deviation of 1, essentially normalizing them. This ensures consistent inputs to our neural network.
 
-For training in particular, we would do a few more distortions to artificially increase our training set. We randomly flipped the image from left to right, randomly distorted the image brightness, and 	randomly distorted the image contrast for each image. These changes to randomly distort the images greatly improved the performance of the model, raising the correct classification rate from $45.4\%$ to $53.8\%$ when initially implemented.
+For training in particular, we performed a few more distortions to artificially increase our training set. We randomly flipped the image from left to right, randomly distorted the image brightness, and randomly distorted the image contrast for each image.
+These changes to randomly distort the images greatly improved the performance of the model, raising the correct classification rate from $45.4\%$ to $53.8\%$ when initially implemented.
 
 \section{Results and Analysis}
 
 \subsection{PCA}
 
-\begin{figure}
+We used the first $k = 150$ principal components of the training data as our
+eigenface basis. We found that this many eigenfaces explained 95\% of the variance
+seen in our training data. However,
+we found that the features extracted from PCA were not very powerful representations
+of the data. In Figure ~\ref{fig:pca}, we show the images obtained from PCA against
+the original images in the test set.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.8\linewidth]{original_test}
+\includegraphics[width=0.8\linewidth]{projected_test}
+\caption{\label{fig:pca} The first twelve images in the test set projected onto the
+150-dimensional eigenface basis.}
+\end{figure}
+
+We then optimized RBF SVM on the new features, and found that the optimal set of
+parameters $C=5$ and $\gamma = 0.005$ yielded a test accuracy of 41\%. The model
+selection grid search can be seen in Figure ~\ref{fig:grid_pca}. Here, we see that
+we indeed have converged upon at least a local minimum over the ranges $C$ = \{
+1, 5, 10, 50, 100, 500, 1000, 5000\} and $\gamma$ = \{5e-5, 0.0001, 0.0005, 0.001,
+0.005, 0.01\}.
+
+\begin{figure}[htb]
 \centering
 \includegraphics[width=0.5\textwidth]{grid_search_pca}
-\caption{\label{fig:grid_pca} Cross validation on SVM with PCA features. Test accuracy for best
-parameters was 41\%.}
+\caption{\label{fig:grid_pca} Cross validation on SVM with PCA features.
+Test accuracy for best parameters was 41\%.}
 \end{figure}
+
+We also fed the features into our neural network for classification. We found that
+although different combinations of parameters yielded different convergence behaviors,
+those we tried all converged to at most accuracy of 40\%. The convergence of a
+two-layer neural net with 80 hidden nodes is shown in Figure ~\ref{fig:pca_nnet}.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{pca_nn_accuracy}
+\caption{\label{fig:pca_nnet} The convergence of a two-layer neural net with 80
+hidden nodes for features extracted with PCA.}
+\end{figure}
+
+The mediocre classification accuracy on features extracted using PCA is unsurprising
+given the data. The features extracted were sensitive to the variance in the
+individual faces of the subjects, in addition to their facial expressions. Therefore
+our standard models of classification were unable to pick out the significant
+features to identify facial features. To address this problem we attempted using
+facial landmarks, which are more robust to variation among individual faces.
 
 \subsection{Facial Landmarks}
 
-\begin{figure}
+The landmarks extracted from facial images are shown in Figure ~\ref{fig:landmarks}.
+For RBF SVM, we performed the same model selection grid search as described above,
+which can be seen in Figure ~\ref{fig:grid_landmarks}.
+We found that the optimal set of parameters yielded a test accuracy of 52\%, an
+improvement over the features extracted using PCA. Again we see that we have
+converged upon a minimum over the ranges $C$ = \{1, 5, 10, 50, 100, 500\} and
+$\gamma$ = \{1e-7, 5e-7, 1e-6, 5e-6, 1e-5, 5e-5\}.
+
+\begin{figure}[htb]
 \centering
 \includegraphics[width=0.5\textwidth]{grid_search_landmarks}
-\caption{\label{fig:grid_pca} Cross validation on SVM with facial landmarks. Test accuracy for best
-parameters was 52\%.}
+\caption{\label{fig:grid_landmarks} Cross validation on SVM with facial landmarks.
+Test accuracy for best parameters was 52\%.}
 \end{figure}
 
+We again fed our features into a neural network for classification, and found that
+the models we tried all converged to the same value of around 50\%, albeit with
+slightly different convergence behaviors. The convergence of a two-layer neural net
+with 100 hidden nodes is shown in Figure ~\ref{fig:landmarks_nnet}.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{landmarks_nn_accuracy}
+\caption{\label{fig:landmarks_nnet} The convergence of a two-layer neural net with 100
+hidden nodes for facial landmark features.}
+\end{figure}
+
+Here we note that although there was an increase in performance, the performance
+of both methods of classification was not impressive. In an attempt to improve
+the descriptiveness of our features, we normalized the landmark points with respect
+to the bounding box of the face, to minimize variance among individual feature
+dimensions. However, we found that this did not aid in test accuracy. We think this
+is because we did not extract enough landmark points to capture the fine facial
+changes between different expressions. Related to this is the quality of the
+landmark detector. However, such work is beyond the scope of this project.
+To improve performance, we experimented with convolution nets for both feature
+extraction and classification.
 
 \subsection{Convolutional Neural Network}
 
@@ -212,7 +297,7 @@ We trained our model on Google Cloud Compute server with 4 CPUs and 15GB RAM for
 
 Our model achieved a correct classification rate of $65.2\%$ on the 7-way classification problem, which is comparable to the $69\%$ correct classification rate of the winning model on Kaggle. Our model correctly determines the correct label within the two highest logits with $82.3\%$ accuracy, and determines the correct label within the three highest logits with $90.5\%$ accuracy.
 
-We can see how the total loss and the loss across the layers changed along with the learning rate in Figure \ref{fig:cnnloss}. There are a couple interesting patterns. First, the weight decay loss on the \texttt{local3} and \texttt{local4} layers fell very quickly (by the 5000th step) and did not decrease past that, while still decreasing the cross entropy loss. The \texttt{local4} loss even increased slightly. 
+We can see how the total loss and the loss across the layers changed along with the learning rate in Figure \ref{fig:cnnloss}. There are a few interesting patterns. First, the weight decay loss on the \texttt{local3} and \texttt{local4} layers fell very quickly (by the 5000th step) and did not decrease past that, while still decreasing the cross entropy loss. The \texttt{local4} loss even increased slightly. 
 
 In addition, the total loss, and in particular the cross entropy loss, dropped dramatically once the learning rate dropped according to the exponential learning rate decay schedule. This makes sense, since it allows the neural net to much more finely optimize the weights on the space it settled in with the larger learning rate. Finally, at the extremely small learning rate of $0.001$, the loss converged at around $0.5$, and any additional learning in the model at this point did not increase the classification success on the test set.
 
@@ -252,11 +337,16 @@ One feature which could be implemented and would likely improve the performance 
 Lawrence, S.; Giles, L.; Tsoi, A. C.; Back, A. D. (1997)
 ``Face Recognition: A Convolutional Neural-Network Approach"
 \textit{Neural Networks, IEEE transactions on} 8 (1):98-113
+
 \bibitem{Matsugu}
 Matsugu, M.; Mori, K.; Mitari Y.; Kaneda Y. (2003)
 ``Subject independent facial expression recognition with robust face detection using a convolutional neural network"
 \textit{Neural Networks} 16 (5):555-559
 
+\bibitem{Kazemi}
+Kazemi, V.; Sullivan, J. (2014)
+``One Millisecond Face Alignment with an Ensemble of Regression Trees"
+\textit{The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}
 
 \bibitem{Krizhevsky}
 Krizhevsky, A.; Sutskever; Hinton, I.; Hinton, G. (2012)

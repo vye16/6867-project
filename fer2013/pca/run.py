@@ -30,6 +30,7 @@ if __name__=="__main__":
 #    pca = RandomizedPCA(n_components=ncomp, whiten=True)
     pca = PCA(n_components=ncomp, whiten=True)
     pca.fit(X) # fit pca to training data
+    1/0
     Xnew = pca.transform(Xtv)
     X1new = pca.transform(X1)
     X2new = pca.transform(X2)
